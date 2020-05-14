@@ -9,16 +9,24 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>Micro-Chat-Room-Client</artifactId>
-    <groupId>com.micro.client</groupId>
+    <artifactId>Micro-Chat-Room-Cloud</artifactId>
+    <groupId>com.micro.cloud</groupId>
     <version>1.0-SNAPSHOT</version>
-    <description>Micro聊天室的客户端</description>
+    <description>Micro云端接口模块，提供用户的业务基础功能</description>
 
     <dependencies>
-        <!--        Netty 依赖-->
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.micro</groupId>
+    <groupId>com.micro.ui</groupId>
     <artifactId>Micro-Chat-Room-UI</artifactId>
     <version>1.0-SNAPSHOT</version>
     <description>Micro聊天室的UI模块</description>

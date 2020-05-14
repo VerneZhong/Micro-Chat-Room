@@ -10,7 +10,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>Micro-Chat-Room-Server</artifactId>
+    <groupId>com.micro.server</groupId>
+    <version>1.0-SNAPSHOT</version>
     <description>Micro聊天室的服务端</description>
 
-
+    <dependencies>
+<!--        Netty 依赖-->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
+    </dependencies>
 </project>
