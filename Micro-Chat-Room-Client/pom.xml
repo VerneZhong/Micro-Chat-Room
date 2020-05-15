@@ -15,7 +15,7 @@
     <description>Micro聊天室的客户端</description>
 
     <dependencies>
-        <!--        Netty 依赖-->
+        <!-- Netty 依赖 -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
