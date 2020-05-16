@@ -15,6 +15,12 @@
         <module>Micro-Chat-Room-Cloud</module>
     </modules>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.7.RELEASE</version>
+    </parent>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -28,6 +34,8 @@
         <spring.boot.mybatis.version>2.1.2</spring.boot.mybatis.version>
         <lombok.version>1.18.12</lombok.version>
         <jboss.marshalling.version>2.0.9.Final</jboss.marshalling.version>
+        <hikari.version>3.4.5</hikari.version>
+        <mybatis.plus.version>3.3.1</mybatis.plus.version>
     </properties>
 
     <dependencyManagement>
@@ -69,6 +77,20 @@
                 <version>${spring.boot.mybatis.version}</version>
             </dependency>
 
+            <!-- mybatis-plus依赖 -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybatis.plus.version}</version>
+            </dependency>
+
+            <!-- 代码生成器依赖 -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-generator</artifactId>
+                <version>${mybatis.plus.version}</version>
+            </dependency>
+
             <!-- lombok -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -77,22 +99,22 @@
                 <scope>provided</scope>
             </dependency>
 
-            <!-- jboss-marshalling 序列化 -->
+            <!-- JBoss-marshalling 序列化 -->
             <dependency>
                 <groupId>org.jboss.marshalling</groupId>
                 <artifactId>jboss-marshalling</artifactId>
                 <version>${jboss.marshalling.version}</version>
             </dependency>
 
+            <!-- HikariCP 数据源 -->
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikari.version}</version>
+            </dependency>
 
 
         </dependencies>
     </dependencyManagement>
-
-    <build>
-        <plugins>
-
-        </plugins>
-    </build>
 
 </project>
