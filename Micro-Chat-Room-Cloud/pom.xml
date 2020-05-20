@@ -54,6 +54,11 @@
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.ibeetl</groupId>
+            <artifactId>beetl</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

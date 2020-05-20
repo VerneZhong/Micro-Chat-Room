@@ -23,7 +23,7 @@ public class EntityGenerator {
     /**
      * 生成输出目录，定位到工程的java目录下
      */
-    private String outputDir = "E:\\workSpace\\Micro-Chat-Room\\Micro-Chat-Room-Cloud\\src\\main\\java";
+    private String outputDir = "/Users/zhongxuebin/IdeaProjects/Micro-Chat-Room/Micro-Chat-Room-Cloud/src/main/java";
 
     /**
      * 生成类的作者
@@ -33,10 +33,10 @@ public class EntityGenerator {
     /**
      * 数据源相关配置
      */
-    private String url = "jdbc:mysql://127.0.0.1:3306/micro-?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false&serverTimezone=UTC";
+    private String url = "jdbc:mysql://127.0.0.1:3306/micro_chat_room?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false&serverTimezone=UTC";
     private String driverName = "com.mysql.cj.jdbc.Driver";
     private String userName = "root";
-    private String userPwd = "root";
+    private String userPwd = "@Wwindows8";
 
     /**
      * 包路径
@@ -47,7 +47,7 @@ public class EntityGenerator {
      * 待生成的表名，注意是覆盖更新
      */
     private static String[] tableNames = new String[]{
-            "user"
+            "user", "user_friends"
     };
 
     public void entityGenerator() {

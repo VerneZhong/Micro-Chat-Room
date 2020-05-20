@@ -29,7 +29,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <spring.boot.version>2.2.7.RELEASE</spring.boot.version>
         <mybatis.version>3.5.4</mybatis.version>
-        <mysql.version>5.1.49</mysql.version>
+        <mysql.version>8.0.20</mysql.version>
         <netty.version>4.1.50.Final</netty.version>
         <spring.boot.mybatis.version>2.1.2</spring.boot.mybatis.version>
         <lombok.version>1.18.12</lombok.version>
@@ -37,6 +37,7 @@
         <hikari.version>3.4.5</hikari.version>
         <mybatis.plus.version>3.3.1</mybatis.plus.version>
         <thumbnailator.version>0.4.11</thumbnailator.version>
+        <beetl.version>2.9.10</beetl.version>
     </properties>
 
     <dependencyManagement>
@@ -119,6 +120,13 @@
                 <groupId>net.coobird</groupId>
                 <artifactId>thumbnailator</artifactId>
                 <version>${thumbnailator.version}</version>
+            </dependency>
+
+            <!-- beetl -->
+            <dependency>
+                <groupId>com.ibeetl</groupId>
+                <artifactId>beetl</artifactId>
+                <version>${beetl.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
