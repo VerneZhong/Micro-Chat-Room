@@ -10,6 +10,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 
+import static com.micro.server.constant.ServerConstant.DEFAULT_EVENT_LOOP_THREAD;
+
 /**
  * Netty Server
  *
@@ -22,14 +24,23 @@ public class NettyServer {
     private final EventLoopGroup workGroup;
     private Channel channel;
 
-    public NettyServer() {
+    private static NettyServer INSTANCE;
+
+    private NettyServer() {
         if (Epoll.isAvailable()) {
-            this.bossGroup = new EpollEventLoopGroup(1);
+            this.bossGroup = new EpollEventLoopGroup(DEFAULT_EVENT_LOOP_THREAD);
             this.workGroup = new EpollEventLoopGroup();
         } else {
-            this.bossGroup = new NioEventLoopGroup(1);
+            this.bossGroup = new NioEventLoopGroup(DEFAULT_EVENT_LOOP_THREAD);
             this.workGroup = new NioEventLoopGroup();
         }
+    }
+
+    public static NettyServer getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new NettyServer();
+        }
+        return INSTANCE;
     }
 
     public void start() {
@@ -55,6 +66,7 @@ public class NettyServer {
     }
 
     public void destroy() {
+        System.out.println("Netty Server destroy...");
         channel.close();
         bossGroup.shutdownGracefully();
         workGroup.shutdownGracefully();
