@@ -38,6 +38,9 @@
         <mybatis.plus.version>3.3.1</mybatis.plus.version>
         <thumbnailator.version>0.4.11</thumbnailator.version>
         <beetl.version>2.9.10</beetl.version>
+        <javafx.version>13</javafx.version>
+        <msgpack.version>0.6.12</msgpack.version>
+        <fastjson.version>1.2.68</fastjson.version>
     </properties>
 
     <dependencyManagement>
@@ -128,6 +131,27 @@
                 <artifactId>beetl</artifactId>
                 <version>${beetl.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-controls</artifactId>
+                <version>${javafx.version}</version>
+            </dependency>
+
+            <!-- msgpack 二进制序列化 -->
+            <dependency>
+                <groupId>org.msgpack</groupId>
+                <artifactId>msgpack</artifactId>
+                <version>${msgpack.version}</version>
+            </dependency>
+
+            <!-- fastjson -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

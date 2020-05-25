@@ -14,4 +14,24 @@
     <version>1.0-SNAPSHOT</version>
     <description>Micro聊天室的UI模块</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+        </dependency>
+    </dependencies>
+
+    <!-- mvn clean javafx:run -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.4</version>
+                <configuration>
+                    <mainClass>com.wechat.ui.WeChatApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
