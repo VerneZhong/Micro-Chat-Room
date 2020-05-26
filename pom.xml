@@ -13,6 +13,7 @@
         <module>Micro-Chat-Room-Client</module>
         <module>Micro-Chat-Room-Server</module>
         <module>Micro-Chat-Room-Cloud</module>
+        <module>Micro-Chat-Room-Common</module>
     </modules>
 
     <parent>
@@ -41,6 +42,8 @@
         <javafx.version>13</javafx.version>
         <msgpack.version>0.6.12</msgpack.version>
         <fastjson.version>1.2.68</fastjson.version>
+        <micro.common.version>1.0-SNAPSHOT</micro.common.version>
+        <mutils.version>0.3.7</mutils.version>
     </properties>
 
     <dependencyManagement>
@@ -150,6 +153,13 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson.version}</version>
+            </dependency>
+
+            <!-- mutils-core -->
+            <dependency>
+                <groupId>cn.minsin</groupId>
+                <artifactId>mutils-core</artifactId>
+                <version>${mutils.version}</version>
             </dependency>
 
         </dependencies>

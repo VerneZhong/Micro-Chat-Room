@@ -29,7 +29,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.4</version>
                 <configuration>
-                    <mainClass>com.wechat.ui.WeChatApplication</mainClass>
+                    <mainClass>com.micro.ui.WeChatApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
