@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="css/style.css"/>
     <script type="text/javascript" src="/js/lib/jquery.min.js"></script>
     <script type="text/javascript" src="/js/lib/jquery.snowfall.js"></script>
+    <script type="text/javascript" src="/js/lib/md5.min.js"></script>
     <script type="text/javascript" src="/js/chat.util.js"></script>
 </head>
 
@@ -17,8 +18,12 @@
         欢迎进入Micro WebSocket聊天室
         <br/>
         <br/>
-        <input type="text" style="width:180px;" placeholder="进入前，请先输入昵称" id="nickname" name="nickname"/>
-        <input type="button" style="width:50px;" value="进入" onclick="CHAT.login();"/>
+<!--        <input type="text" style="width:180px;" placeholder="用户名" id="nickname" name="nickname"/>-->
+<!--        <input type="password" style="width:180px;" placeholder="密码" id="password" name="password"/>-->
+<!--        <input type="button" style="width:50px;" value="登录" onclick="CHAT.login();"/>-->
+
+        <input type="text" style="width:180px;" placeholder="进入前，请先输入昵称" id="nickname" name="nickname" />
+        <input type="button" style="width:50px;" value="进入" onclick="CHAT.login();" />
         <div id="error-msg" style="color:red;"></div>
     </div>
 </div>
@@ -44,8 +49,8 @@
                 <div class="tool-box">
                     <div class="face-box" id="face-box"></div>
                     <span class="face" onclick="CHAT.openFace()" title="选择表情"></span>
-                    <!--                    <span class="img" id="tool-img-btn" title="发送图片"></span>-->
-                    <!--                    <span class="file" id="tool-file-btn" title="上传文件"></span>-->
+                    <span class="img" id="tool-img-btn" onclick="CHAT.sendImg()" title="发送图片"></span>
+                    <span class="file" id="tool-file-btn" onclick="CHAT.sendFile()" title="上传文件"></span>
                     <span class="flower" onclick="CHAT.sendFlower()" title="送鲜花"></span>
                 </div>
                 <div class="input-box">
@@ -54,7 +59,6 @@
                         <input class="button" type="button" id="mjr_send" onclick="CHAT.sendText()" value="发送"/>
                     </div>
                 </div>
-                <div class="copyright">版权所有</div>
             </form>
         </div>
     </div>

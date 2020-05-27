@@ -3,6 +3,8 @@ package com.micro.server.handler;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -17,12 +19,12 @@ import java.net.URL;
 @Slf4j
 public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private URL baseUrl = HttpServerHandler.class.getResource("");
-
     private final String webRoot = "webroot";
 
     private File getResource(String fileName) throws Exception {
-        String basePath = baseUrl.toURI().toString();
+        ClassPathResource resource = new ClassPathResource("webroot");
+        String basePath = resource.getFile().getAbsolutePath();
+        log.info("resource path: {}", basePath);
         int start = basePath.indexOf("classes/");
         basePath = (basePath.substring(0, start) + "/" + "classes/").replace("/+", "/");
 
@@ -58,7 +60,6 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, contextType + "charset=utf-8;");
 
         boolean keepAlive = HttpUtil.isKeepAlive(request);
-
         if (keepAlive) {
             response.headers().set(HttpHeaderNames.CONTENT_LENGTH, file.length());
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
