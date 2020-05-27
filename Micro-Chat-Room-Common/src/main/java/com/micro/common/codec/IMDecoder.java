@@ -6,6 +6,7 @@ import com.micro.common.protocol.IMP;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.msgpack.MessagePack;
 import org.msgpack.MessageTypeException;
@@ -24,30 +25,33 @@ import static com.micro.common.constant.ServerConstant.RIGHT_BRACKET;
  * @author Mr.zxb
  * @date 2020-05-25
  **/
+@Slf4j
 public class IMDecoder extends ByteToMessageDecoder {
 
     /**
      * IM 请求内容的正则
      */
-    private Pattern pattern = Pattern.compile("^\\[(.*)](\\s-\\s(.*))?");
+    private Pattern pattern = Pattern.compile("^\\[(.*)\\](\\s\\-\\s(.*))?");
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        // 获取可读字节数
-        int length = in.readableBytes();
-        byte[] bytes = new byte[length];
-        String content = new String(bytes, in.readerIndex(), length);
-
-        // 空消息不解析
-        if (StringUtils.isEmpty(content)) {
-            if (!IMP.isIMP(content)) {
-                ctx.channel().pipeline().remove(this);
-            }
-        }
-
         try {
+            // 获取可读字节数
+            int length = in.readableBytes();
+            byte[] bytes = new byte[length];
+            String content = new String(bytes, in.readerIndex(), length);
+
+            // 其他消息协议不解析
+            if (StringUtils.isNotEmpty(content)) {
+                if (!IMP.isIMP(content)) {
+                    ctx.channel().pipeline().remove(this);
+                    return;
+                }
+            }
             in.getBytes(in.readerIndex(), bytes, 0, length);
-            out.add(new MessagePack().read(bytes, IMMessage.class));
+            IMMessage read = new MessagePack().read(bytes, IMMessage.class);
+            log.info("IM 解码器解码消息：{}", read);
+            out.add(read);
             in.clear();
         } catch (MessageTypeException e) {
             ctx.channel().pipeline().remove(this);

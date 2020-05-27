@@ -35,35 +35,40 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         String uri = request.uri();
-        String page = "/".equals(uri) ? "chat.html" : uri;
-        RandomAccessFile file = new RandomAccessFile(getResource(page), "r");
 
-        HttpResponse response = new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.OK);
-        String contextType = "text/html";
+        RandomAccessFile file;
+        try {
+            String page = uri.equals("/") ? "chat.html" : uri;
+            file = new RandomAccessFile(getResource(page), "r");
+        } catch (Exception e) {
+            ctx.fireChannelRead(request.retain());
+            return;
+        }
 
+        HttpResponse response = new DefaultHttpResponse(request.protocolVersion(), HttpResponseStatus.OK);
+        String contextType = "text/html;";
         if (uri.endsWith(".css")) {
-            contextType = "text/css";
+            contextType = "text/css;";
         } else if (uri.endsWith(".js")) {
-            contextType = "text/javascript";
+            contextType = "text/javascript;";
         } else if (uri.toLowerCase().matches(".*\\.(jpg|png|gif)$")) {
             String ext = uri.substring(uri.lastIndexOf("."));
             contextType = "image/" + ext;
         }
-
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contextType + "charset=utf-8");
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contextType + "charset=utf-8;");
 
         boolean keepAlive = HttpUtil.isKeepAlive(request);
+
         if (keepAlive) {
             response.headers().set(HttpHeaderNames.CONTENT_LENGTH, file.length());
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
-
         ctx.write(response);
         ctx.write(new DefaultFileRegion(file.getChannel(), 0, file.length()));
 
-        ChannelFuture channelFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+        ChannelFuture future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         if (!keepAlive) {
-            channelFuture.addListener(ChannelFutureListener.CLOSE);
+            future.addListener(ChannelFutureListener.CLOSE);
         }
         file.close();
     }

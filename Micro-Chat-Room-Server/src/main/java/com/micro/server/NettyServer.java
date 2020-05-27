@@ -43,9 +43,6 @@ public final class NettyServer {
         if (Epoll.isAvailable()) {
             bossGroup = new EpollEventLoopGroup(DEFAULT_EVENT_LOOP_THREAD);
             workGroup = new EpollEventLoopGroup();
-        } else if (KQueue.isAvailable()) {
-            bossGroup = new KQueueEventLoopGroup(DEFAULT_EVENT_LOOP_THREAD);
-            workGroup = new KQueueEventLoopGroup();
         } else {
             bossGroup = new NioEventLoopGroup(DEFAULT_EVENT_LOOP_THREAD);
             workGroup = new NioEventLoopGroup();
@@ -63,9 +60,9 @@ public final class NettyServer {
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workGroup)
-                    .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : KQueue.isAvailable() ? KQueueServerSocketChannel.class : NioServerSocketChannel.class)
+                    .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
-                    .option(ChannelOption.SO_BACKLOG, 100)
+                    .option(ChannelOption.SO_BACKLOG, 1024)
                     .childHandler(new ChannelInitializer<Channel>() {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
@@ -73,24 +70,23 @@ public final class NettyServer {
 
                             // 添加 Handler 以及 编解码器
                             // 处理自定义协议
-//                            pipeline.addLast(new IMDecoder());
-//                            pipeline.addLast(new IMEncoder());
-//                            pipeline.addLast(new TerminalServerHandler());
+                            pipeline.addLast(new IMDecoder());
+                            pipeline.addLast(new IMEncoder());
+                            pipeline.addLast(new TerminalServerHandler());
 
                             // 处理 Http 请求
                             pipeline.addLast(new HttpServerCodec());
                             pipeline.addLast(new HttpObjectAggregator(64 * 1024));
-
                             // 处理大文件数据流
                             pipeline.addLast(new ChunkedWriteHandler());
+                            pipeline.addLast(new HttpServerHandler());
 
                             // 处理 WebSocket 请求
                             pipeline.addLast(new WebSocketServerProtocolHandler("/im"));
-                            pipeline.addLast(new HttpServerHandler());
                             pipeline.addLast(new WebSocketServerHandler());
                         }
-                    });
-            bootstrap.bind(SERVER_PORT).sync();
+                    })
+                    .bind(SERVER_PORT).sync();
             log.info("服务已启动，监听端口:{}，访问地址：{}", SERVER_PORT, SERVER_HOST + ":" + SERVER_PORT);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -102,4 +98,5 @@ public final class NettyServer {
         bossGroup.shutdownGracefully();
         workGroup.shutdownGracefully();
     }
+
 }

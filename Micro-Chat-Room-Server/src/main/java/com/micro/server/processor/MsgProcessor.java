@@ -216,8 +216,7 @@ public class MsgProcessor {
         ONLINE_USERS.add(client);
 
         for (Channel onlineUser : ONLINE_USERS) {
-            boolean isSelf = onlineUser == client;
-            if (!isSelf) {
+            if (onlineUser != client) {
                 im = new IMMessage(IMP.SYSTEM.getName(), sysTime(), ONLINE_USERS.size(), getNickName(client) + "加入");
             } else {
                 im = new IMMessage(IMP.SYSTEM.getName(), sysTime(), ONLINE_USERS.size(), "已与服务器建立连接");

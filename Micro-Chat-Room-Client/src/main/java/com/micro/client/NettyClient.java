@@ -11,9 +11,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.kqueue.KQueue;
-import io.netty.channel.kqueue.KQueueEventLoopGroup;
-import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +35,6 @@ public class NettyClient {
     private NettyClient(String nickName) {
         if (Epoll.isAvailable()) {
             workGroup = new EpollEventLoopGroup();
-        } else if (KQueue.isAvailable()) {
-            workGroup = new KQueueEventLoopGroup();
         } else {
             workGroup = new NioEventLoopGroup();
         }
@@ -57,7 +52,7 @@ public class NettyClient {
         try {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(workGroup)
-                    .channel(Epoll.isAvailable() ? EpollSocketChannel.class : KQueue.isAvailable() ? KQueueSocketChannel.class : NioSocketChannel.class)
+                    .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                     .handler(new ChannelInitializer<Channel>() {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
@@ -77,5 +72,9 @@ public class NettyClient {
     public void stop() {
         System.out.println("Netty Server destroy...");
         workGroup.shutdownGracefully();
+    }
+
+    public static void main(String[] args) {
+        new NettyClient("zxb").start();
     }
 }

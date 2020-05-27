@@ -198,8 +198,7 @@ $(document).ready(function(){
 				//有新的消息过来以后，自动切到最底部
 				CHAT.scrollToBottom();
 			};
-			
-			
+
 			if (!window.WebSocket) {
 			    window.WebSocket = window.MozWebSocket;
 			}

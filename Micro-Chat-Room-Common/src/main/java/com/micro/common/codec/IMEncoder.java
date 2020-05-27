@@ -5,6 +5,7 @@ import com.micro.common.protocol.IMP;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.msgpack.MessagePack;
 
@@ -18,10 +19,12 @@ import static com.micro.common.constant.ServerConstant.RIGHT_BRACKET;
  * @author Mr.zxb
  * @date 2020-05-25
  **/
+@Slf4j
 public class IMEncoder extends MessageToByteEncoder<IMMessage> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, IMMessage msg, ByteBuf out) throws Exception {
+        log.info("IM 编码器编码消息：{}", msg);
         out.writeBytes(new MessagePack().write(msg));
     }
 
@@ -42,7 +45,7 @@ public class IMEncoder extends MessageToByteEncoder<IMMessage> {
             preface.append(LEFT_BRACKET).append(message.getOnline()).append(RIGHT_BRACKET);
         }
 
-        if (!StringUtils.isEmpty(message.getContent())) {
+        if (StringUtils.isNotEmpty(message.getContent())) {
             preface.append(" - ").append(message.getContent());
         }
         return preface.toString();
