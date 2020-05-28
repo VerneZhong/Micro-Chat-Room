@@ -87,7 +87,7 @@ public class IMDecoder extends ByteToMessageDecoder {
                 return new IMMessage(headers[0], headers[3], time, nickName);
             } else if (msg.startsWith(LEFT_BRACKET + IMP.CHAT.getName() + RIGHT_BRACKET)) {
                 return new IMMessage(headers[0], time, nickName, content);
-            } else if (msg.startsWith(LEFT_BRACKET + IMP.FLOWER + RIGHT_BRACKET)) {
+            } else if (msg.startsWith(LEFT_BRACKET + IMP.FLOWER.getName() + RIGHT_BRACKET)) {
                 return new IMMessage(headers[0], headers[3], time, nickName);
             } else {
                 return null;

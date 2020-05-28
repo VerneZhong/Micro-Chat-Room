@@ -1,3 +1,4 @@
+@charset "utf-8";
 @media (max-device-width: 480px) and (orientation: portrait) {
  @-ms-viewport{
    width:320px;

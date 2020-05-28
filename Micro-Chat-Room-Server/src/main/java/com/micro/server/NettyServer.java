@@ -10,9 +10,6 @@ import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.kqueue.KQueue;
-import io.netty.channel.kqueue.KQueueEventLoopGroup;
-import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -82,7 +79,7 @@ public final class NettyServer {
                             pipeline.addLast(new HttpServerHandler());
 
                             // 处理 WebSocket 请求
-                            pipeline.addLast(new WebSocketServerProtocolHandler("/im"));
+                            pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
                             pipeline.addLast(new WebSocketServerHandler());
                         }
                     })
