@@ -11,6 +11,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.micro.common.constant.ServerConstant.CONSOLE;
 
@@ -20,6 +21,7 @@ import static com.micro.common.constant.ServerConstant.CONSOLE;
  * @author Mr.zxb
  * @date 2020-05-25
  **/
+@Slf4j
 public class MsgProcessor {
 
     /**
@@ -148,6 +150,7 @@ public class MsgProcessor {
      * @param im
      */
     private void withFlower(Channel client, IMMessage im) {
+        log.info("接收Client:{}, 送花消息：{}", client, im);
         JSONObject attrs = getAttrs(client);
         if (null != attrs) {
             long lastTime = attrs.getLongValue("lastFlowerTime");
@@ -187,6 +190,7 @@ public class MsgProcessor {
      * @param im
      */
     private void withChat(Channel client, IMMessage im) {
+        log.info("接收Client:{}, 聊天消息：{}", client, im);
         for (Channel channel : ONLINE_USERS) {
             boolean isSelf = channel == client;
             if (isSelf) {
@@ -210,6 +214,7 @@ public class MsgProcessor {
      * @param im
      */
     private void withLogin(Channel client, IMMessage im) {
+        log.info("接收Client:{}, 登录消息：{}", client, im);
         client.attr(NICE_NAME).getAndSet(im.getSender());
         client.attr(IP_ADDR).getAndSet(getAddress(client));
         client.attr(FROM).getAndSet(im.getTerminal());
