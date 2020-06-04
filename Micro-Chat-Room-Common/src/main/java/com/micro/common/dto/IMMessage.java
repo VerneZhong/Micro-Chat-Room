@@ -12,7 +12,6 @@ import org.msgpack.annotation.Message;
  **/
 @Message
 @Data
-@Builder
 public class IMMessage {
 
     /**
