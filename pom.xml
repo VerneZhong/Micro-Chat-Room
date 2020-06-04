@@ -172,6 +172,12 @@
                 <version>${common.io.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.micro</groupId>
+                <artifactId>Micro-Chat-Room-Common</artifactId>
+                <version>${micro.common.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

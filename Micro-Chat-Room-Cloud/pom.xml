@@ -59,6 +59,16 @@
             <groupId>com.ibeetl</groupId>
             <artifactId>beetl</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.micro</groupId>
+            <artifactId>Micro-Chat-Room-Common</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

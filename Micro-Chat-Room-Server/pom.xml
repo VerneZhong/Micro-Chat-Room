@@ -21,10 +21,10 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- micro-common -->
         <dependency>
             <groupId>com.micro</groupId>
             <artifactId>Micro-Chat-Room-Common</artifactId>
-            <version>${micro.common.version}</version>
         </dependency>
 
         <!-- lombok -->
