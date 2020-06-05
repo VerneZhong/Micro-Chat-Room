@@ -1,5 +1,6 @@
 package com.micro.common.dto;
 
+import com.micro.common.util.JsonUtil;
 import lombok.Data;
 import org.msgpack.annotation.Message;
 
@@ -11,10 +12,17 @@ import org.msgpack.annotation.Message;
 @Message
 public class UserDTO {
 
+    private Integer id;
+
     /**
      * 用户名
      */
-    private String userName;
+    private String account;
+
+    /**
+     * 昵称
+     */
+    private String nickname;
 
     /**
      * 密码
@@ -41,4 +49,8 @@ public class UserDTO {
      */
     private String address;
 
+    @Override
+    public String toString() {
+        return JsonUtil.toJson(this);
+    }
 }

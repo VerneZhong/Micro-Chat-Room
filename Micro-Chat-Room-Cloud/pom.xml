@@ -69,6 +69,11 @@
             <groupId>com.micro</groupId>
             <artifactId>Micro-Chat-Room-Common</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.micro</groupId>
+            <artifactId>Micro-Chat-Room-Thrift-User-API</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

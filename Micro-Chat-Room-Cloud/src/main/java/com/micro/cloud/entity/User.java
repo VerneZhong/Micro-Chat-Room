@@ -3,6 +3,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import java.time.LocalDate;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.micro.common.util.JsonUtil;
+
 import java.io.Serializable;
 /**
  * <p>
@@ -131,8 +133,8 @@ public class User extends Model<User> {
         this.area = area;
     }
 
-    public Integer getIsLocked() {
-        return isLocked;
+    public boolean getIsLocked() {
+        return isLocked == 1;
     }
 
     public void setIsLocked(Integer isLocked) {
@@ -154,17 +156,6 @@ public class User extends Model<User> {
 
     @Override
     public String toString() {
-        return "User{" +
-        ", id=" + id +
-        ", account=" + account +
-        ", password=" + password +
-        ", nickname=" + nickname +
-        ", cellphoneNumber=" + cellphoneNumber +
-        ", avatarAddress=" + avatarAddress +
-        ", age=" + age +
-        ", area=" + area +
-        ", isLocked=" + isLocked +
-        ", registerDate=" + registerDate +
-        "}";
+        return JsonUtil.toJson(this);
     }
 }

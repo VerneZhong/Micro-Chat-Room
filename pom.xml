@@ -14,6 +14,7 @@
         <module>Micro-Chat-Room-Server</module>
         <module>Micro-Chat-Room-Cloud</module>
         <module>Micro-Chat-Room-Common</module>
+        <module>Micro-Chat-Room-Thrift-User-API</module>
     </modules>
 
     <parent>
@@ -42,11 +43,13 @@
         <javafx.version>13</javafx.version>
         <msgpack.version>0.6.12</msgpack.version>
         <fastjson.version>1.2.68</fastjson.version>
-        <micro.common.version>1.0-SNAPSHOT</micro.common.version>
         <mutils.version>0.3.7</mutils.version>
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
         <common.io.version>2.6</common.io.version>
+        <thrift.version>0.13.0</thrift.version>
+        <micro.common.version>1.0-SNAPSHOT</micro.common.version>
+        <micro.thrift.user.version>1.0-SNAPSHOT</micro.thrift.user.version>
     </properties>
 
     <dependencyManagement>
@@ -172,12 +175,32 @@
                 <version>${common.io.version}</version>
             </dependency>
 
+            <!-- common 模块 -->
             <dependency>
                 <groupId>com.micro</groupId>
                 <artifactId>Micro-Chat-Room-Common</artifactId>
                 <version>${micro.common.version}</version>
             </dependency>
 
+            <!-- lib thrift -->
+            <dependency>
+                <groupId>org.apache.thrift</groupId>
+                <artifactId>libthrift</artifactId>
+                <version>${thrift.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.micro</groupId>
+                <artifactId>Micro-Chat-Room-Thrift-User-API</artifactId>
+                <version>${micro.thrift.user.version}</version>
+            </dependency>
+
+            <!-- tomcat-util -->
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-util</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
