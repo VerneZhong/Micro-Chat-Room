@@ -16,6 +16,8 @@ public final class ServerConstant {
 
     public static final String SERVER_HOST = "127.0.0.1";
 
+    public static final int THRIFT_USER_PORT = 8085;
+
     /**
      * Default Boss EventLoopGroup Thread Number
      */

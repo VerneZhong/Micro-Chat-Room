@@ -1,5 +1,6 @@
 package com.micro.server.provider;
 
+import com.micro.common.constant.ServerConstant;
 import com.micro.thrift.user.UserService;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TFramedTransport;
@@ -23,7 +24,8 @@ public class ServerProvider {
     private int serverPort;
 
     public UserService.Client getUserService() {
-        TSocket socket = new TSocket(serverIp, serverPort, 5000);
+//        TSocket socket = new TSocket(serverIp, serverPort, 5000);
+        TSocket socket = new TSocket(ServerConstant.SERVER_HOST, ServerConstant.THRIFT_USER_PORT, 5000);
         TTransport transport = new TFramedTransport(socket);
         try {
             transport.open();
