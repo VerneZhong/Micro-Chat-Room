@@ -1,0 +1,4 @@
+thrift:
+  user:
+    ip: localhost
+    port: 8085
