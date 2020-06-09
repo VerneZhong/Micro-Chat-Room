@@ -15,7 +15,7 @@
         <module>Micro-Chat-Room-Cloud</module>
         <module>Micro-Chat-Room-Common</module>
         <module>Micro-Chat-Room-Thrift-User-API</module>
-        <module>Micro-WeIM</module>
+        <module>Micro-WebIM</module>
     </modules>
 
     <parent>
