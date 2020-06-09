@@ -31,7 +31,7 @@ import java.net.InetSocketAddress;
 @Slf4j
 public class CloudApplication {
 
-    @Value("${server.port}")
+    @Value("${thrift.user.port}")
     private int serverPort;
 
     @Autowired

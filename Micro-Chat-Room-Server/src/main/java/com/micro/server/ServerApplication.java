@@ -1,6 +1,5 @@
 package com.micro.server;
 
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
@@ -16,12 +15,12 @@ public class ServerApplication {
 
     public static void main(String[] args) {
         new SpringApplicationBuilder(ServerApplication.class)
-                .web(WebApplicationType.NONE)
+//                .web(WebApplicationType.NONE)
                 .run(args);
     }
 
     @PostConstruct
-    public void startServer() {
+    public void startServer() throws Exception {
         NettyServer nettyServer = NettyServer.getInstance();
         nettyServer.start();
         Runtime.getRuntime().addShutdownHook(new Thread(nettyServer::stop));

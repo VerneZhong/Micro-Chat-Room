@@ -5,7 +5,6 @@ import com.micro.common.codec.IMDecoder;
 import com.micro.common.codec.IMEncoder;
 import com.micro.common.dto.IMMessage;
 import com.micro.common.protocol.IMP;
-import com.micro.server.provider.ServerProvider;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -24,8 +23,6 @@ import static com.micro.common.constant.ServerConstant.CONSOLE;
  **/
 @Slf4j
 public class MsgProcessor {
-
-    private ServerProvider serverProvider = new ServerProvider();
 
     /**
      * 在线用户

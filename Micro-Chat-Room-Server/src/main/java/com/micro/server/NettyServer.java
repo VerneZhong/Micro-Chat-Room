@@ -17,8 +17,19 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.springframework.core.io.ClassPathResource;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
 
 import static com.micro.common.constant.ServerConstant.*;
 
@@ -36,7 +47,7 @@ public final class NettyServer {
 
     private static NettyServer INSTANCE;
 
-    private NettyServer() {
+    private NettyServer() throws Exception {
         if (Epoll.isAvailable()) {
             bossGroup = new EpollEventLoopGroup(DEFAULT_EVENT_LOOP_THREAD);
             workGroup = new EpollEventLoopGroup();
@@ -46,7 +57,7 @@ public final class NettyServer {
         }
     }
 
-    public static NettyServer getInstance() {
+    public static NettyServer getInstance() throws Exception {
         if (INSTANCE == null) {
             INSTANCE = new NettyServer();
         }
@@ -64,6 +75,12 @@ public final class NettyServer {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
+
+                            // 添加 Ssl
+                            SSLEngine sslEngine = createSSLContext().createSSLEngine();
+                            sslEngine.setUseClientMode(false);
+                            sslEngine.setNeedClientAuth(true);
+//                            pipeline.addFirst(new SslHandler(sslEngine));
 
                             // 添加 Handler 以及 编解码器
                             // 处理自定义协议
@@ -88,6 +105,33 @@ public final class NettyServer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private SSLContext createSSLContext() throws Exception {
+        String fileName = "chivalry-live-tomcat.jks";
+        String password = "windows8";
+        KeyStore ks = KeyStore.getInstance("JKS");
+        InputStream ksInputStream = new FileInputStream(getResource(fileName));
+        ks.load(ksInputStream, password.toCharArray());
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(ks, password.toCharArray());
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kmf.getKeyManagers(), null, null);
+
+        return sslContext;
+    }
+
+    private File getResource(String fileName) throws Exception {
+        String path = "jks" + File.separator + fileName;
+        path = path.replaceAll("//", "/");
+        log.info("resource path: {}", path);
+        ClassPathResource classPathResource = new ClassPathResource(path);
+        InputStream inputStream = classPathResource.getInputStream();
+
+        String property = System.getProperty("user.dir") + "/";
+        File target = new File(property + path);
+        FileUtils.copyInputStreamToFile(inputStream, target);
+        return target;
     }
 
     public void stop() {
