@@ -1,4 +1,4 @@
-package com.micro.im.vo;
+package com.micro.cloud.vo;
 
 import lombok.Data;
 

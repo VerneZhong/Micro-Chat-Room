@@ -1,4 +1,4 @@
-package com.micro.im.vo;
+package com.micro.cloud.vo;
 
 import lombok.Data;
 
@@ -12,6 +12,6 @@ import java.util.List;
 @Data
 public class FriendGroup {
     private String groupname;
-    private Integer id;
+    private Long id;
     private List<FriendVO> list;
 }

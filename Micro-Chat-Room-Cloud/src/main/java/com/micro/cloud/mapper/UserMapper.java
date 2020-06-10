@@ -2,7 +2,6 @@ package com.micro.cloud.mapper;
 
 import com.micro.cloud.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.springframework.stereotype.Repository;
 
 /**
  * <p>
@@ -10,9 +9,8 @@ import org.springframework.stereotype.Repository;
  * </p>
  *
  * @author Mr.zxb
- * @since 2020-05-20
+ * @since 2020-06-10
  */
-@Repository
 public interface UserMapper extends BaseMapper<User> {
 
 }

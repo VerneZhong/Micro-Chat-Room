@@ -1,6 +1,6 @@
-package com.micro.im.resp;
+package com.micro.cloud.resp;
 
-import com.micro.im.vo.MembersVO;
+import com.micro.cloud.vo.MembersVO;
 import lombok.Data;
 
 import java.util.List;

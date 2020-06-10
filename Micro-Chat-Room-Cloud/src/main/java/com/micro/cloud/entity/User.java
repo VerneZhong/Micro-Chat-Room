@@ -3,8 +3,6 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import java.time.LocalDate;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.micro.common.util.JsonUtil;
-
 import java.io.Serializable;
 /**
  * <p>
@@ -12,7 +10,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author Mr.zxb
- * @since 2020-05-20
+ * @since 2020-06-10
  */
 public class User extends Model<User> {
 
@@ -68,6 +66,11 @@ public class User extends Model<User> {
      * 注册日期
      */
     private LocalDate registerDate;
+
+    /**
+     * 签名
+     */
+    private String sign;
 
     public Long getId() {
         return id;
@@ -133,8 +136,8 @@ public class User extends Model<User> {
         this.area = area;
     }
 
-    public boolean getIsLocked() {
-        return isLocked == 1;
+    public Integer getIsLocked() {
+        return isLocked;
     }
 
     public void setIsLocked(Integer isLocked) {
@@ -149,6 +152,14 @@ public class User extends Model<User> {
         this.registerDate = registerDate;
     }
 
+    public String getSign() {
+        return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
+    }
+
     @Override
     protected Serializable pkVal() {
         return null;
@@ -156,6 +167,18 @@ public class User extends Model<User> {
 
     @Override
     public String toString() {
-        return JsonUtil.toJson(this);
+        return "User{" +
+        ", id=" + id +
+        ", account=" + account +
+        ", password=" + password +
+        ", nickname=" + nickname +
+        ", cellphoneNumber=" + cellphoneNumber +
+        ", avatarAddress=" + avatarAddress +
+        ", age=" + age +
+        ", area=" + area +
+        ", isLocked=" + isLocked +
+        ", registerDate=" + registerDate +
+        ", sign=" + sign +
+        "}";
     }
 }

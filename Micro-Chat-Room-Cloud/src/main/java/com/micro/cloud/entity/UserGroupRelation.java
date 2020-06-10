@@ -11,30 +11,22 @@ import java.io.Serializable;
  * @author Mr.zxb
  * @since 2020-06-10
  */
-public class UserFriends extends Model<UserFriends> {
+public class UserGroupRelation extends Model<UserGroupRelation> {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
-     * 账号
-     */
-    private String friendId;
-
-    /**
-     * 好友账号
-     */
-    private String userId;
-
-    /**
-     * 好友分组id
+     * 群组id
      */
     private Long groupId;
+
+    /**
+     * 群员id
+     */
+    private Long userId;
 
     public Long getId() {
         return id;
@@ -42,22 +34,6 @@ public class UserFriends extends Model<UserFriends> {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getFriendId() {
-        return friendId;
-    }
-
-    public void setFriendId(String friendId) {
-        this.friendId = friendId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public Long getGroupId() {
@@ -68,6 +44,14 @@ public class UserFriends extends Model<UserFriends> {
         this.groupId = groupId;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     @Override
     protected Serializable pkVal() {
         return null;
@@ -75,11 +59,10 @@ public class UserFriends extends Model<UserFriends> {
 
     @Override
     public String toString() {
-        return "UserFriends{" +
+        return "UserGroupRelation{" +
         ", id=" + id +
-        ", friendId=" + friendId +
-        ", userId=" + userId +
         ", groupId=" + groupId +
+        ", userId=" + userId +
         "}";
     }
 }

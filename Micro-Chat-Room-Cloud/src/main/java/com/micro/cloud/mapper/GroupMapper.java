@@ -1,6 +1,6 @@
 package com.micro.cloud.mapper;
 
-import com.micro.cloud.entity.UserFriends;
+import com.micro.cloud.entity.Group;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author Mr.zxb
  * @since 2020-06-10
  */
-public interface UserFriendsMapper extends BaseMapper<UserFriends> {
+public interface GroupMapper extends BaseMapper<Group> {
 
 }

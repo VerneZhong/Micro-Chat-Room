@@ -15,20 +15,20 @@ import lombok.Data;
 public class ResultVO<T> {
 
     private Integer code;
-    private String message;
+    private String msg;
     private T data;
 
     public static ResultVO success() {
         return ResultVO.builder()
                 .code(BusinessCode.OK.getCode())
-                .message(BusinessCode.OK.getMessage())
+                .msg(BusinessCode.OK.getMessage())
                 .build();
     }
 
     public static <T> ResultVO<T> success(T data) {
         return ResultVO.<T>builder()
                 .code(BusinessCode.OK.getCode())
-                .message(BusinessCode.OK.getMessage())
+                .msg(BusinessCode.OK.getMessage())
                 .data(data)
                 .build();
     }
@@ -36,7 +36,7 @@ public class ResultVO<T> {
     public static <T> ResultVO<T> fail(BusinessCode code, T data) {
         return ResultVO.<T>builder()
                 .code(code.getCode())
-                .message(code.getMessage())
+                .msg(code.getMessage())
                 .data(data)
                 .build();
     }
@@ -44,7 +44,7 @@ public class ResultVO<T> {
     public static ResultVO fail(Throwable throwable) {
         return ResultVO.builder()
                 .code(BusinessCode.SYSTEM_ERROR.getCode())
-                .message(BusinessCode.SYSTEM_ERROR.getMessage())
+                .msg(BusinessCode.SYSTEM_ERROR.getMessage())
                 .data(throwable.getMessage())
                 .build();
     }

@@ -1,8 +1,8 @@
-package com.micro.im.resp;
+package com.micro.cloud.resp;
 
-import com.micro.im.vo.FriendGroup;
-import com.micro.im.vo.GroupVO;
-import com.micro.im.vo.Mine;
+import com.micro.cloud.vo.FriendGroup;
+import com.micro.cloud.vo.GroupVO;
+import com.micro.cloud.vo.Mine;
 import lombok.Data;
 
 import java.util.List;

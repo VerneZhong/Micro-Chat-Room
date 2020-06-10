@@ -38,9 +38,7 @@ public class CloudApplication {
     private UserService.Iface userService;
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(CloudApplication.class)
-                .web(WebApplicationType.NONE)
-                .run(args);
+        SpringApplication.run(CloudApplication.class, args);
     }
 
     @PostConstruct

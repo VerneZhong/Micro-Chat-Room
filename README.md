@@ -13,3 +13,9 @@
         
    ### Micro-Chat-Room-Cloud
         负责聊天室用户等其他的业务功能逻辑，供客户端提供Rest接口服务
+        
+   ### Micro-WebIM
+        聊天室 Web客户端
+        
+   ### Micro-WebIM-API-Gateway
+        WebIM API 网关模块，提供API接口的入口

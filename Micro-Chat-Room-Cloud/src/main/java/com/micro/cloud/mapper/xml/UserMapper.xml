@@ -14,5 +14,6 @@
         <result column="area" property="area" />
         <result column="is_locked" property="isLocked" />
         <result column="register_date" property="registerDate" />
+        <result column="sign" property="sign" />
     </resultMap>
 </mapper>

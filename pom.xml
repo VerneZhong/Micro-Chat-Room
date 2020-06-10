@@ -16,6 +16,8 @@
         <module>Micro-Chat-Room-Common</module>
         <module>Micro-Chat-Room-Thrift-User-API</module>
         <module>Micro-WebIM</module>
+        <module>Micro-WebIM-API-Gateway</module>
+        <module>Micro-WebIM-API</module>
     </modules>
 
     <parent>
@@ -51,6 +53,8 @@
         <thrift.version>0.13.0</thrift.version>
         <micro.common.version>1.0-SNAPSHOT</micro.common.version>
         <micro.thrift.user.version>1.0-SNAPSHOT</micro.thrift.user.version>
+        <protobuf.version>3.12.2</protobuf.version>
+        <guava.version>29.0-jre</guava.version>
     </properties>
 
     <dependencyManagement>
@@ -202,6 +206,21 @@
                 <artifactId>tomcat-util</artifactId>
                 <version>${tomcat.version}</version>
             </dependency>
+
+            <!-- protobuf-java -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+
+            <!-- google guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

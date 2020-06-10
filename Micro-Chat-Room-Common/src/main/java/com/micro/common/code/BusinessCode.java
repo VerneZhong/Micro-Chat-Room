@@ -7,9 +7,9 @@ package com.micro.common.code;
 public enum BusinessCode {
 
     /**
-     * 200 ok
+     * ok
      */
-    OK(200, "请求成功"),
+    OK(0, "请求成功"),
     FAIL(100, "请求失败"),
     SYSTEM_ERROR(500, "系统错误"),
     USER_INVALID(101, "用户名和密码错误");

@@ -36,6 +36,11 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.micro</groupId>
+            <artifactId>Micro-Chat-Room-Common</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
