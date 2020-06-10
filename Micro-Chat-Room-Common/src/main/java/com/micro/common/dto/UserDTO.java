@@ -12,7 +12,7 @@ import org.msgpack.annotation.Message;
 @Message
 public class UserDTO {
 
-    private Integer id;
+    private Long id;
 
     /**
      * 用户名
@@ -25,11 +25,6 @@ public class UserDTO {
     private String nickname;
 
     /**
-     * 密码
-     */
-    private String password;
-
-    /**
      * 年龄
      */
     private Integer age;
@@ -40,9 +35,9 @@ public class UserDTO {
     private String avatar;
 
     /**
-     * 邀请码
+     * 签名
      */
-    private String invitationCode;
+    private String sign;
 
     /**
      * 地址

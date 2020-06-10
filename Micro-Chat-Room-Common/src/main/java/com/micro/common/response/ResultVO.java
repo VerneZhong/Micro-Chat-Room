@@ -33,11 +33,10 @@ public class ResultVO<T> {
                 .build();
     }
 
-    public static <T> ResultVO<T> fail(BusinessCode code, T data) {
+    public static <T> ResultVO<T> fail(BusinessCode code) {
         return ResultVO.<T>builder()
                 .code(code.getCode())
                 .msg(code.getMessage())
-                .data(data)
                 .build();
     }
 
