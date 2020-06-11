@@ -67,7 +67,7 @@ CREATE TABLE `user_friends` (
 -- ----------------------------
 DROP TABLE IF EXISTS `user_friends_group`;
 CREATE TABLE `user_friends_group` (
-  `id` bigint(20) NOT NULL COMMENT '分组主键id',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '分组主键id',
   `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT '好友分组名称',
   `user_id` bigint(20) NOT NULL COMMENT '所属用户',
   PRIMARY KEY (`id`)

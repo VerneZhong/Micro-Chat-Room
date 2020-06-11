@@ -1,4 +1,6 @@
 package com.micro.im.entity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import java.io.Serializable;
 /**
@@ -16,6 +18,7 @@ public class UserFriendsGroup extends Model<UserFriendsGroup> {
     /**
      * 分组主键id
      */
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**

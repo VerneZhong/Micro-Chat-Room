@@ -201,6 +201,11 @@ public class UserServiceImpl implements UserService {
         user.setRegisterDate(LocalDate.now());
         user.setIsLocked(0);
         userMapper.insert(user);
+
+        UserFriendsGroup userFriendsGroup = new UserFriendsGroup();
+        userFriendsGroup.setName("我的好友");
+        userFriendsGroup.setUserId(user.getId());
+        userFriendsGroupMapper.insert(userFriendsGroup);
     }
 
     /**
