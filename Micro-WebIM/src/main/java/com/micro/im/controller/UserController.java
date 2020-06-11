@@ -116,6 +116,7 @@ public class UserController {
 
             // 缓存用户到Redis
             redisClient.set(token, userDTO, 3600);
+            redisClient.set(user.getId().toString(), "online");
             return ResultVO.success(token);
         }
         return ResultVO.fail(BusinessCode.USER_INVALID);

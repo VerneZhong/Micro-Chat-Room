@@ -4,14 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
-import com.micro.im.entity.Group;
-import com.micro.im.entity.User;
-import com.micro.im.entity.UserFriendsGroup;
-import com.micro.im.entity.UserGroupRelation;
-import com.micro.im.mapper.GroupMapper;
-import com.micro.im.mapper.UserFriendsGroupMapper;
-import com.micro.im.mapper.UserGroupRelationMapper;
-import com.micro.im.mapper.UserMapper;
+import com.micro.im.entity.*;
+import com.micro.im.mapper.*;
 import com.micro.im.request.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
@@ -51,6 +45,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserGroupRelationMapper userGroupRelationMapper;
 
+    @Autowired
+    private UserFriendsMapper userFriendsMapper;
+
     /**
      * 获取用户list
      * @param userId
@@ -58,6 +55,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public GetListResp getList(Long userId) {
+        // 当前用户
         Mine mine = new Mine();
         User user = userMapper.selectById(userId);
         mine.setId(String.valueOf(userId));
@@ -66,12 +64,19 @@ public class UserServiceImpl implements UserService {
         mine.setAvatar(user.getAvatarAddress());
         mine.setSign(user.getSign());
 
+        // 查询分组好友列表
         LambdaQueryWrapper<UserFriendsGroup> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFriendsGroup::getUserId, userId);
         List<UserFriendsGroup> userFriendsGroups = userFriendsGroupMapper.selectList(lambdaQueryWrapper);
 
-        List<Long> friendIds = userFriendsGroups.stream()
-                .map(UserFriendsGroup::getUserId)
+        // 查询我的好友列表
+        LambdaQueryWrapper<UserFriends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        friendsLambdaQueryWrapper.eq(UserFriends::getUserId, userId);
+        List<UserFriends> userFriends = userFriendsMapper.selectList(friendsLambdaQueryWrapper);
+        Map<Long, List<UserFriends>> userFriendsMap = userFriends.stream().collect(Collectors.groupingBy(UserFriends::getGroupId));
+
+        List<Long> friendIds = userFriends.stream()
+                .map(UserFriends::getFriendId)
                 .collect(Collectors.toList());
 
         List<FriendGroup> friendGroups = Lists.newArrayList();
@@ -83,9 +88,10 @@ public class UserServiceImpl implements UserService {
 
             Map<Long, List<User>> userListMap = friends.stream().collect(Collectors.groupingBy(User::getId));
             friendGroups = userFriendsGroups.stream()
-                    .map(userFriendsGroup -> getFriendGroup(userListMap, userFriendsGroup))
+                    .map(userFriendsGroup -> getFriendGroup(userListMap, userFriendsGroup, userFriendsMap))
                     .collect(Collectors.toList());
         }
+
         // 查找用户加入的群组
         List<GroupVO> groupVOS = Lists.newArrayList();
         LambdaQueryWrapper<UserGroupRelation> queryWrapper = new LambdaQueryWrapper<>();
@@ -116,14 +122,25 @@ public class UserServiceImpl implements UserService {
         return groupVO;
     }
 
-    private FriendGroup getFriendGroup(Map<Long, List<User>> userListMap, UserFriendsGroup userFriendsGroup) {
+    private FriendGroup getFriendGroup(Map<Long, List<User>> userListMap,
+                                       UserFriendsGroup userFriendsGroup,
+                                       Map<Long, List<UserFriends>> userFriendsMap) {
         FriendGroup friendGroup = new FriendGroup();
         friendGroup.setGroupname(userFriendsGroup.getName());
         friendGroup.setId(userFriendsGroup.getId());
-        List<User> users = userListMap.get(userFriendsGroup.getUserId());
-        List<FriendVO> friendVOS = users.stream().map(friend -> getFriendVO(friend))
+
+        List<UserFriends> userFriends = userFriendsMap.get(userFriendsGroup.getId());
+        List<Long> friendsList = userFriends.stream()
+                .map(UserFriends::getFriendId)
                 .collect(Collectors.toList());
-        friendGroup.setList(friendVOS);
+
+        for (Long friendId : friendsList) {
+            List<User> users = userListMap.get(friendId);
+            List<FriendVO> friendVOS = users.stream()
+                    .map(friend -> getFriendVO(friend))
+                    .collect(Collectors.toList());
+            friendGroup.setList(friendVOS);
+        }
         return friendGroup;
     }
 
@@ -135,7 +152,7 @@ public class UserServiceImpl implements UserService {
         friendVO.setAvatar(friend.getAvatarAddress());
         friendVO.setSign(friend.getSign());
         String online = (String) redisClient.get(id);
-        friendVO.setStatus(online);
+        friendVO.setStatus(online != null ? online : "offline");
         return friendVO;
     }
 
