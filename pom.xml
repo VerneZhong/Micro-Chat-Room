@@ -55,6 +55,7 @@
         <micro.thrift.user.version>1.0-SNAPSHOT</micro.thrift.user.version>
         <protobuf.version>3.12.2</protobuf.version>
         <guava.version>29.0-jre</guava.version>
+        <kryo.version>4.0.2</kryo.version>
     </properties>
 
     <dependencyManagement>
@@ -219,6 +220,12 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.esotericsoftware</groupId>
+                <artifactId>kryo</artifactId>
+                <version>${kryo.version}</version>
             </dependency>
 
         </dependencies>

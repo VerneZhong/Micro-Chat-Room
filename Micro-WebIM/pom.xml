@@ -42,6 +42,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.micro</groupId>
             <artifactId>Micro-Chat-Room-Common</artifactId>
         </dependency>
