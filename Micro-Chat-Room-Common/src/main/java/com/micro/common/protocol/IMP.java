@@ -11,23 +11,33 @@ public enum IMP {
     /**
      * 系统消息
      */
-    SYSTEM("SYSTEM"),
+    SYSTEM("system"),
     /**
      * 登陆指令
      */
-    LOGIN("LOGIN"),
+    LOGIN("login"),
     /**
      * 登出指令
      */
-    LOGOUT("LOGOUT"),
+    LOGOUT("logout"),
     /**
      * 聊天信息
      */
-    CHAT("CHAT"),
+    CHAT("chat"),
     /**
      * 送鲜花
      */
-    FLOWER("FLOWER");
+    FLOWER("flower"),
+
+    /**
+     * 私聊消息类型
+     */
+    FRIEND("friend"),
+
+    /**
+     * 群聊消息类型
+     */
+    GROUP("group");
 
     private String name;
 

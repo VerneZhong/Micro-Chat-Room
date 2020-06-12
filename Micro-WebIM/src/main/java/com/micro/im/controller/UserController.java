@@ -4,7 +4,6 @@ import com.micro.common.code.BusinessCode;
 import com.micro.common.constant.FileType;
 import com.micro.common.dto.UserDTO;
 import com.micro.common.response.ResultVO;
-import com.micro.common.util.MD5Util;
 import com.micro.common.util.TokenUtil;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.User;
@@ -22,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * 用户 ctrl
@@ -152,4 +149,27 @@ public class UserController {
         return ResultVO.success(fileResp);
     }
 
+    @GetMapping("/modifyStatus.do")
+    @ResponseBody
+    public ResultVO modifyStatus(@RequestParam String token, @RequestParam String status) {
+        UserDTO dto = authentication(token);
+        log.info("修改用户在线状态：{}:{}", dto.getNickname(), status);
+        redisClient.set(dto.getId().toString(), status);
+        return ResultVO.success();
+    }
+
+    @GetMapping("/modifySign.do")
+    @ResponseBody
+    public ResultVO modifySign(@RequestParam String token, @RequestParam String sign) {
+        UserDTO dto = authentication(token);
+        if (dto != null) {
+            log.info("更改用户签名：{}:{}", dto.getNickname(), sign);
+            User user = new User();
+            user.setId(dto.getId());
+            user.setSign(sign);
+            userService.updateUser(user);
+            return ResultVO.success();
+        }
+        return ResultVO.fail(BusinessCode.NO_LOGIN);
+    }
 }

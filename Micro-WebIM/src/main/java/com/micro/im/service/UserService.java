@@ -46,4 +46,10 @@ public interface UserService {
      * @return
      */
     User login(String account, String password);
+
+    /**
+     * 修改用户信息
+     * @param user
+     */
+    void updateUser(User user);
 }

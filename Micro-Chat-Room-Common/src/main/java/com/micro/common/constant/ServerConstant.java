@@ -12,7 +12,7 @@ public final class ServerConstant {
      * Netty Server Port
      *
      */
-    public static final int SERVER_PORT = 8888;
+    public static final int SERVER_PORT = 8080;
 
     public static final String SERVER_HOST = "127.0.0.1";
 

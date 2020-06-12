@@ -11,9 +11,10 @@ public enum BusinessCode {
      */
     OK(0, "请求成功"),
     FAIL(100, "请求失败"),
-    PARAM_ERROR(102, "参数错误"),
+    PARAM_ERROR(101, "参数错误"),
     SYSTEM_ERROR(500, "系统错误"),
-    USER_INVALID(101, "用户名和密码错误");
+    USER_INVALID(102, "用户名和密码错误"),
+    NO_LOGIN(103, "没有登录");
 
     private Integer code;
     private String message;
