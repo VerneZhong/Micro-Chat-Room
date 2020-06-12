@@ -80,6 +80,18 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
 
         List<FriendGroup> friendGroups = Lists.newArrayList();
+
+        if (!CollectionUtils.isEmpty(userFriendsGroups) && CollectionUtils.isEmpty(friendIds)) {
+            friendGroups = userFriendsGroups.stream()
+                    .map(userFriendsGroup -> {
+                        FriendGroup friendGroup = new FriendGroup();
+                        friendGroup.setGroupname(userFriendsGroup.getName());
+                        friendGroup.setId(userFriendsGroup.getId());
+                        friendGroup.setList(Lists.newArrayList());
+                        return friendGroup;
+                    })
+                    .collect(Collectors.toList());
+        }
         if (!CollectionUtils.isEmpty(friendIds)) {
             // 查询该用户的好友列表
             LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();

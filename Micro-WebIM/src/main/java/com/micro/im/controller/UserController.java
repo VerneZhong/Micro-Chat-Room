@@ -1,6 +1,7 @@
 package com.micro.im.controller;
 
 import com.micro.common.code.BusinessCode;
+import com.micro.common.constant.FileType;
 import com.micro.common.dto.UserDTO;
 import com.micro.common.response.ResultVO;
 import com.micro.common.util.MD5Util;
@@ -11,12 +12,16 @@ import com.micro.im.request.UserLoginReq;
 import com.micro.im.request.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
+import com.micro.im.resp.UploadFileResp;
+import com.micro.im.resp.UploadImageResp;
+import com.micro.im.service.FileService;
 import com.micro.im.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,6 +41,9 @@ public class UserController {
     @Autowired
     private RedisClient redisClient;
 
+    @Autowired
+    private FileService fileService;
+
     @GetMapping("/getList.do")
     @ResponseBody
     public ResultVO<GetListResp> getList(@RequestParam String token) {
@@ -54,9 +62,9 @@ public class UserController {
 
     @GetMapping("/getMembers.do")
     @ResponseBody
-    public ResultVO<GetMembersResp> getMembers(@RequestParam Long groupId) {
-        log.info("获取群员列表 req: {}", groupId);
-        GetMembersResp members = userService.getMembers(groupId);
+    public ResultVO<GetMembersResp> getMembers(@RequestParam Long id) {
+        log.info("获取群员列表，群ID: {}", id);
+        GetMembersResp members = userService.getMembers(id);
         return ResultVO.success(members);
     }
 
@@ -122,11 +130,26 @@ public class UserController {
         return ResultVO.fail(BusinessCode.USER_INVALID);
     }
 
-    @PostMapping("/authentication")
+    @PostMapping("/authentication.do")
     @ResponseBody
     public UserDTO authentication(@RequestHeader("token") String token) {
         return (UserDTO) redisClient.get(token);
     }
 
+    @PostMapping("/uploadImg.do")
+    @ResponseBody
+    public ResultVO<UploadImageResp> uploadImg(@RequestParam("file") MultipartFile file) {
+        log.info("上传图片：{}", file);
+        String filepath = fileService.uploadFile(file, FileType.IMG).getSrc();
+        return ResultVO.success(new UploadImageResp(filepath));
+    }
+
+    @PostMapping("/uploadFile.do")
+    @ResponseBody
+    public ResultVO<UploadFileResp> uploadFile(@RequestParam("file") MultipartFile file) {
+        log.info("上传文件：{}", file);
+        UploadFileResp fileResp = fileService.uploadFile(file, FileType.FILE);
+        return ResultVO.success(fileResp);
+    }
 
 }

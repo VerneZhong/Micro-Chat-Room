@@ -30,4 +30,12 @@ public final class ServerConstant {
     public static final String CONSOLE = "Console";
 
     public static final String EXIT = "EXIT";
+
+    public static final String BASE_UPLOAD = "/upload/";
+
+    public static final String UPLOAD_IMG_PATH = "/upload/img/";
+
+    public static final String UPLOAD_VIDEO_PATH = "/upload/video/";
+
+    public static final String UPLOAD_FILE_PATH = "/upload/file/";
 }

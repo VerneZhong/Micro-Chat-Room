@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class LoginFilter implements Filter {
 
     private static final Set<String> ALLOWED_PATHS = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList("/login", "/logout", "/register", "/js/", "/css/", "/image/", "/layui", "*.ico")));
+            Arrays.asList("/login", "/logout", "/register", "/accountExists", "/js/", "/css/", "/image/", "/layui", "*.ico")));
 
     /**
      * 缓存实例
