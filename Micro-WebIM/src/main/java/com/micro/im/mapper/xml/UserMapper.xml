@@ -16,4 +16,8 @@
         <result column="register_date" property="registerDate" />
         <result column="sign" property="sign" />
     </resultMap>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from user
+    </select>
 </mapper>

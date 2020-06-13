@@ -1,7 +1,11 @@
 package com.micro.im.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.*;
@@ -16,8 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -204,7 +207,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void register(UserRegisterReq req) {
+        Integer integer = userMapper.selectCount();
         User user = new User();
+        if (integer == 0) {
+            user.setId(10000L);
+        }
         user.setAccount(req.getAccount());
         user.setPassword(MD5Util.md5(req.getPassword()));
         user.setNickname(req.getNickname());
@@ -219,6 +226,8 @@ public class UserServiceImpl implements UserService {
         userFriendsGroup.setUserId(user.getId());
         userFriendsGroupMapper.insert(userFriendsGroup);
     }
+
+
 
     /**
      * 账号是否已存在
@@ -254,5 +263,42 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUser(User user) {
         userMapper.updateById(user);
+    }
+
+    @Override
+    public List<User> getRecommend(Long mineId) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.notIn(User::getId, mineId);
+        return userMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<User> findUserByAccountAndName(String val, Integer limit) {
+        List<User> result = Lists.newArrayList();
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        if (limit != null) {
+            Page<User> userPage = new Page<>();
+            userPage.setCurrent(limit);
+            queryWrapper.like(User::getAccount, val);
+            Page<User> page = userMapper.selectPage(userPage, queryWrapper);
+            result.addAll(page.getRecords());
+            queryWrapper.clear();
+            queryWrapper.like(User::getNickname, val);
+            List<User> records = userMapper.selectPage(userPage, queryWrapper).getRecords();
+            result.addAll(records);
+        } else {
+            queryWrapper.like(User::getAccount, val);
+            List<User> users = userMapper.selectList(queryWrapper);
+            result.addAll(users);
+            queryWrapper.clear();
+            queryWrapper.like(User::getNickname, val);
+            List<User> users2 = userMapper.selectList(queryWrapper);
+            result.addAll(users2);
+        }
+        HashMap<Long, User> map = Maps.newHashMap();
+        for (User user : result) {
+            map.putIfAbsent(user.getId(), user);
+        }
+        return new ArrayList<>(map.values());
     }
 }

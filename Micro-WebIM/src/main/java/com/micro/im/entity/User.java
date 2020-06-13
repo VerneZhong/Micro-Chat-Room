@@ -166,6 +166,26 @@ public class User extends Model<User> {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof User) {
+            User vo = (User) obj;
+            return vo.getId().equals(this.id) && vo.account.equals(this.account);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode() * this.account.hashCode();
+    }
+
+    @Override
     public String toString() {
         return "User{" +
         ", id=" + id +

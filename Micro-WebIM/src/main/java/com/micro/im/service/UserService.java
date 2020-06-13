@@ -4,6 +4,9 @@ import com.micro.im.entity.User;
 import com.micro.im.request.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
+import com.micro.im.resp.RecommendResp;
+
+import java.util.List;
 
 /**
  * user interface
@@ -52,4 +55,19 @@ public interface UserService {
      * @param user
      */
     void updateUser(User user);
+
+    /**
+     * 获取好友推荐列表
+     * @param mineId
+     * @return
+     */
+    List<User> getRecommend(Long mineId);
+
+    /**
+     * 根据账号查找好友
+     * @param account
+     * @param limit
+     * @return
+     */
+    List<User> findUserByAccountAndName(String account, Integer limit);
 }

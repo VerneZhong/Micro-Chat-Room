@@ -13,10 +13,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+
+import static com.micro.common.util.FileUtil.SEPARATOR;
 
 /**
  * class
@@ -42,39 +45,79 @@ public class FileServiceImpl implements FileService {
                 if (!FileUtil.exists(baseDir)) {
                     FileUtil.create(baseDir);
                 }
-                Path fileStorageLocation = Paths.get(baseDir).toAbsolutePath().normalize();
-                Path targetLocation = fileStorageLocation.resolve(fileName);
-                Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+                String targetPath = getTargetResourceBasePath() + path;
+                if (!FileUtil.exists(targetPath)) {
+                    FileUtil.create(targetPath);
+                }
+                copyFile(file.getInputStream(), fileName, baseDir);
+                copyFile(file.getInputStream(), fileName, targetPath);
                 return new UploadFileResp(path + fileName, fileName);
             } catch (IOException ex) {
                 throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         throw new RuntimeException("文件不存在 " + file);
     }
 
     /**
-     * 获取项目根路径
+     * 拷贝一个文件流到目标目录
+     * @param is
+     * @param fileName
+     * @param baseDir
+     */
+    private void copyFile(InputStream is, String fileName, String baseDir) {
+        try {
+            Path fileStorageLocation = Paths.get(baseDir).toAbsolutePath().normalize();
+            Path targetLocation = fileStorageLocation.resolve(fileName);
+            Files.copy(is, targetLocation, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 获取实际项目根路径
      *
      * @return
      */
-    private static String getResourceBasePath() {
+    private String getResourceBasePath() throws FileNotFoundException {
         // 获取跟目录
-        File path = null;
-        try {
-            path = new File(ResourceUtils.getURL("classpath:static/").getPath());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (path == null || !path.exists()) {
+        File path = new File(ResourceUtils.getURL("classpath:").getPath());
+        if (!path.exists()) {
             path = new File("");
         }
         String pathStr = path.getAbsolutePath();
-        pathStr = pathStr.replace("\\target\\classes", "");
-
+        pathStr = pathStr.replace(SEPARATOR + "target" + SEPARATOR + "classes", "");
+        pathStr += SEPARATOR +"src" + SEPARATOR + "main" + SEPARATOR + "resources" + SEPARATOR + "static";
         return pathStr;
     }
 
+    /**
+     * 获取target项目根路径
+     *
+     * @return
+     */
+    private String getTargetResourceBasePath() throws FileNotFoundException {
+        // 获取跟目录
+        File path = new File(ResourceUtils.getURL("classpath:static/").getPath());
+        if (!path.exists()) {
+            path = new File("");
+        }
+        return path.getAbsolutePath();
+    }
+
+    /**
+     * 上传文件类型
+     *
+     * @param fileType
+     * @return
+     */
     private String getPath(FileType fileType) {
         switch (fileType) {
             case IMG:

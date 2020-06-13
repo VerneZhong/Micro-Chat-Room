@@ -51,7 +51,7 @@ public class LoginFilter implements Filter {
             filterChain.doFilter(request, response);
             return;
         }
-        String token = request.getParameter("token");
+        String token = request.getHeader("token");
         if (StringUtils.isBlank(token)) {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {

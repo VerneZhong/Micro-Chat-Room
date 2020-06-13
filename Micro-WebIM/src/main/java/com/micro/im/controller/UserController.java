@@ -1,5 +1,6 @@
 package com.micro.im.controller;
 
+import com.google.common.collect.Lists;
 import com.micro.common.code.BusinessCode;
 import com.micro.common.constant.FileType;
 import com.micro.common.dto.UserDTO;
@@ -7,12 +8,10 @@ import com.micro.common.response.ResultVO;
 import com.micro.common.util.TokenUtil;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.User;
+import com.micro.im.request.ModifySignReq;
 import com.micro.im.request.UserLoginReq;
 import com.micro.im.request.UserRegisterReq;
-import com.micro.im.resp.GetListResp;
-import com.micro.im.resp.GetMembersResp;
-import com.micro.im.resp.UploadFileResp;
-import com.micro.im.resp.UploadImageResp;
+import com.micro.im.resp.*;
 import com.micro.im.service.FileService;
 import com.micro.im.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +21,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.micro.common.code.BusinessCode.*;
+import static com.micro.common.response.ResultVO.*;
+
 /**
  * 用户 ctrl
  *
  * @author Mr.zxb
  * @date 2020-06-10 09:22
  */
-@Controller
+@RestController
 @Slf4j
 public class UserController {
 
@@ -41,68 +48,63 @@ public class UserController {
     @Autowired
     private FileService fileService;
 
+    /**
+     * 获取用户和好友列表信息
+     * @param token
+     * @return
+     */
     @GetMapping("/getList.do")
-    @ResponseBody
     public ResultVO<GetListResp> getList(@RequestParam String token) {
         log.info("获取用户列表 req: {}", token);
         if (StringUtils.isBlank(token)) {
-            return ResultVO.fail(BusinessCode.PARAM_ERROR);
+            return fail(PARAM_ERROR);
         }
-        UserDTO userDTO = authentication(token);
-        if (userDTO == null) {
-            // 需要重新登录
-
-        }
-        GetListResp resp = userService.getList(userDTO.getId());
-        return ResultVO.success(resp);
+        GetListResp resp = userService.getList(getUserDto(token).getId());
+        return success(resp);
     }
 
+    /**
+     * 获取群员列表
+     * @param id
+     * @return
+     */
     @GetMapping("/getMembers.do")
-    @ResponseBody
     public ResultVO<GetMembersResp> getMembers(@RequestParam Long id) {
         log.info("获取群员列表，群ID: {}", id);
         GetMembersResp members = userService.getMembers(id);
-        return ResultVO.success(members);
+        return success(members);
     }
 
+    /**
+     * 注册用户
+     * @param userRegisterReq
+     * @return
+     */
     @PostMapping("/register.do")
-    @ResponseBody
     public ResultVO register(@RequestBody UserRegisterReq userRegisterReq) {
         log.info("注册新用户: {}", userRegisterReq.getNickname());
         userService.register(userRegisterReq);
-        return ResultVO.success();
+        return success();
     }
 
+    /**
+     * 账号是否已存在
+     * @param account
+     * @return
+     */
     @GetMapping("/accountExists.do")
-    @ResponseBody
     public ResultVO accountExists(@RequestParam String account) {
         log.info("查看账户是否存在：{}", account);
         boolean exists = userService.accountExists(account);
-        return ResultVO.success(exists);
+        return success(exists);
     }
 
-    @GetMapping(value = "/login")
-    public String login() {
-        return "login";
-    }
-
-    @GetMapping("/index")
-    public String index() {
-        return "index";
-    }
-
-    @GetMapping("/")
-    public String home() {
-        return "index";
-    }
-
-    @GetMapping("/register")
-    public String register() {
-        return "register";
-    }
-
+    /**
+     * 用户登录
+     * @param req
+     * @return
+     */
     @PostMapping("/login.do")
-    @ResponseBody
     public ResultVO login(@RequestBody UserLoginReq req) {
         log.info("用户登录: {}", req.getAccount());
         User user = userService.login(req.getAccount(), req.getPassword());
@@ -122,54 +124,143 @@ public class UserController {
             // 缓存用户到Redis
             redisClient.set(token, userDTO, 3600);
             redisClient.set(user.getId().toString(), "online");
-            return ResultVO.success(token);
+            return success(token);
         }
-        return ResultVO.fail(BusinessCode.USER_INVALID);
+        return fail(USER_INVALID);
     }
 
-    @PostMapping("/authentication.do")
-    @ResponseBody
-    public UserDTO authentication(@RequestHeader("token") String token) {
-        return (UserDTO) redisClient.get(token);
-    }
-
+    /**
+     * 上传图片
+     * @param file
+     * @return
+     */
     @PostMapping("/uploadImg.do")
-    @ResponseBody
     public ResultVO<UploadImageResp> uploadImg(@RequestParam("file") MultipartFile file) {
         log.info("上传图片：{}", file);
         String filepath = fileService.uploadFile(file, FileType.IMG).getSrc();
-        return ResultVO.success(new UploadImageResp(filepath));
+        return success(new UploadImageResp(filepath));
     }
 
+    /**
+     * 上传文件
+     * @param file
+     * @return
+     */
     @PostMapping("/uploadFile.do")
-    @ResponseBody
     public ResultVO<UploadFileResp> uploadFile(@RequestParam("file") MultipartFile file) {
         log.info("上传文件：{}", file);
         UploadFileResp fileResp = fileService.uploadFile(file, FileType.FILE);
-        return ResultVO.success(fileResp);
+        return success(fileResp);
     }
 
+    /**
+     * 修改在线状态
+     * @param request
+     * @param status
+     * @return
+     */
     @GetMapping("/modifyStatus.do")
-    @ResponseBody
-    public ResultVO modifyStatus(@RequestParam String token, @RequestParam String status) {
-        UserDTO dto = authentication(token);
-        log.info("修改用户在线状态：{}:{}", dto.getNickname(), status);
-        redisClient.set(dto.getId().toString(), status);
-        return ResultVO.success();
+    public ResultVO modifyStatus(HttpServletRequest request, @RequestParam String status) {
+        UserDTO dto = getUserDto(request);
+        if (dto != null) {
+            log.info("修改用户在线状态：{}:{}", dto.getNickname(), status);
+            redisClient.set(dto.getId().toString(), status);
+            return success();
+        }
+        return fail(PARAM_ERROR);
     }
 
-    @GetMapping("/modifySign.do")
-    @ResponseBody
-    public ResultVO modifySign(@RequestParam String token, @RequestParam String sign) {
-        UserDTO dto = authentication(token);
+    /**
+     * 修改签名
+     * @param request
+     * @param req
+     * @return
+     */
+    @PostMapping("/modifySign.do")
+    public ResultVO modifySign(HttpServletRequest request, @RequestBody ModifySignReq req) {
+        UserDTO dto = getUserDto(request);
         if (dto != null) {
-            log.info("更改用户签名：{}:{}", dto.getNickname(), sign);
+            log.info("更改用户签名：{}:{}", dto.getNickname(), req);
             User user = new User();
             user.setId(dto.getId());
-            user.setSign(sign);
+            user.setSign(req.getSign());
             userService.updateUser(user);
-            return ResultVO.success();
+            return success();
         }
-        return ResultVO.fail(BusinessCode.NO_LOGIN);
+        return fail(NO_LOGIN);
+    }
+
+    private UserDTO getUserDto(HttpServletRequest request) {
+        return getUserDto(request.getHeader("token"));
+    }
+
+    private UserDTO getUserDto(String  token) {
+        if (token == null) {
+            return null;
+        }
+        return (UserDTO) redisClient.get(token);
+    }
+
+    /**
+     * 获取好友推荐
+     * @param token
+     * @return
+     */
+    @GetMapping("/getRecommend.do")
+    public ResultVO<List<RecommendResp>> getRecommend(@RequestParam String token) {
+        log.info("获取好友推荐：{}", token);
+        UserDTO userDto = getUserDto(token);
+        if (userDto != null) {
+            List<User> users = userService.getRecommend(userDto.getId());
+            List<RecommendResp> resps = users.stream().map(user -> {
+                RecommendResp resp = new RecommendResp();
+                resp.setId(user.getId().toString());
+                resp.setNickname(user.getNickname());
+                resp.setAvatar(user.getAvatarAddress());
+                resp.setSign(Optional.ofNullable(user.getSign()).orElse(""));
+                return resp;
+            }).collect(Collectors.toList());
+            return success(resps);
+        }
+        return success(Lists.newArrayList());
+    }
+
+    /**
+     * 拒绝好友添加
+     * @return
+     */
+    @PostMapping("/refuseFriend.do")
+    public ResultVO refuseFriend() {
+        return success();
+    }
+
+    /**
+     * 根据昵称或账号查找好友总数
+     * @return
+     */
+    @GetMapping("/findFriendTotal.do")
+    public ResultVO<FindFriendTotalResp> findFriendTotal(@RequestParam String value) {
+        log.info("根据账号或昵称查找好友总数: {}", value);
+        List<User> userByAccount = userService.findUserByAccountAndName(value, null);
+        return success(new FindFriendTotalResp(userByAccount.size()));
+    }
+
+    /**
+     * 根据昵称或是账号查找好友列表
+     * @return
+     */
+    @GetMapping("/findFriend.do")
+    public ResultVO findFriend(@RequestParam String value, @RequestParam Integer page) {
+        log.info("根据账号或昵称查找好友: {}:{}", value, page);
+        List<User> users = userService.findUserByAccountAndName(value, page);
+        List<RecommendResp> resps = users.stream().map(user -> {
+            RecommendResp resp = new RecommendResp();
+            resp.setId(user.getId().toString());
+            resp.setNickname(user.getNickname());
+            resp.setAvatar(user.getAvatarAddress());
+            resp.setSign(Optional.ofNullable(user.getSign()).orElse(""));
+            return resp;
+        }).collect(Collectors.toList());
+        return success(resps);
     }
 }

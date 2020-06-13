@@ -26,11 +26,25 @@ layui.use('layim', function (layim) {
             , type: 'post' //默认post
         }
         //消息盒子页面地址
-        , msgbox: layui.cache.dir + 'css/modules/layim/html/msgbox.html'
+        , msgbox: 'msgbox'
         //发现页面地址
-        , find: layui.cache.dir + 'css/modules/layim/html/find.html'
+        , find: 'find'
         //聊天记录页面地址
-        , chatLog: layui.cache.dir + 'css/modules/layim/html/chatlog.html'
+        , chatLog: 'chatlog'
+        //可同时配置多个
+        // ,tool: [{
+        //     alias: 'audio'
+        //     ,title: '音频'
+        //     ,icon: '&#xe6fc;'
+        // },{
+        //     alias: 'video'
+        //     ,title: '视频'
+        //     ,icon: '&#xe6ed;'
+        // }]
+        , isAudio: true //开启聊天工具栏音频
+        , isVideo: true //开启聊天工具栏视频
+        , notice: true //是否开启桌面消息提醒，默认false
+        , voice: true
     });
     // ws 地址
     var socket = new WebSocket('ws://localhost:8080/im');
@@ -62,10 +76,14 @@ layui.use('layim', function (layim) {
     layim.on('online', function (status) {
         $.ajax({
             type: "get",
-            url: "modifyStatus.do?token=" + token + "&status=" + status,
+            headers: {      //请求头
+                Accept: "application/json; charset=utf-8",
+                token: "" + token  //这是获取的token
+            },
+            url: "modifyStatus.do?status=" + status,
             contentType: "application/json",
             success: function (data) {
-                console.log(data);
+
             }
         });
     });
@@ -73,18 +91,23 @@ layui.use('layim', function (layim) {
     // 监听修改签名
     layim.on('sign', function (sign) {
         $.ajax({
-            type: "get",
-            url: "modifyStatus.do?token=" + token + "&sign=" + sign,
+            type: "post",
+            headers: {      //请求头
+                Accept: "application/json; charset=utf-8",
+                token: "" + token  //这是获取的token
+            },
+            url: "modifySign.do",
+            data: JSON.stringify({sign: sign}),
             contentType: "application/json",
             success: function (data) {
-                console.log(data);
+
             }
         });
     });
 
     // 监听更换背景皮肤
     layim.on('setSkin', function (filename, src) {
-        console.log(src);
+
     });
 
     // 监听发送消息
@@ -93,8 +116,8 @@ layui.use('layim', function (layim) {
         var to = res.to;
         // 发送消息到服务器
         socket.send(JSON.stringify({
-            type : 'chatMessage',
-            data : res
+            type: 'chatMessage',
+            data: res
         }));
     });
 
@@ -118,8 +141,6 @@ layui.use('layim', function (layim) {
 
     // 监听聊天窗口的切换
     layim.on('chatChange', function (res) {
-        // res 携带当前聊天面板的容器、基础信息等
-        console.log(res);
         // 更新当前会话状态，用于显示对方输入状态、在线离线状态等
         var type = res.data.type;
         // 模拟数据
