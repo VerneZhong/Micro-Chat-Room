@@ -4,164 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>发现</title>
+    <link rel="stylesheet" href="css/find.css">
     <link rel="stylesheet" href="layui/css/layui.css">
     <link rel="stylesheet" href="layui/css/layui.demo.css">
-    <style type="text/css">
-        .layui-find-list li img {
-            position: absolute;
-            left: 15px;
-            top: 8px;
-            width: 36px;
-            height: 36px;
-            border-radius: 100%;
-        }
-
-        .layui-find-list li {
-            position: relative;
-            height: 90px;;
-            padding: 5px 15px 5px 60px;
-            font-size: 0;
-            cursor: pointer;
-        }
-
-        .layui-find-list li * {
-            display: inline-block;
-            vertical-align: top;
-            font-size: 14px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .layui-find-list li span {
-            margin-top: 4px;
-            max-width: 155px;
-        }
-
-        .layui-find-list li p {
-            display: block;
-            line-height: 18px;
-            font-size: 12px;
-            color: #999;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .back {
-            cursor: pointer;
-        }
-
-        .lay_page {
-            position: fixed;
-            bottom: 0;
-            margin-left: -15px;
-            margin-bottom: 20px;
-            background: #fff;
-            width: 100%;
-        }
-        .layui-laypage {
-            width: 105px;
-            margin: 0 auto;
-            display: block
-        }
-    </style>
     <script type='text/javascript' src='js/webim.config.js'></script>
     <script type='text/javascript' src='js/strophe-1.2.8.min.js'></script>
     <script type='text/javascript' src='js/websdk-1.4.13.js'></script>
     <script src="js/lib/jquery.min.js"></script>
     <script src="js/lib/cookie.js"></script>
     <script src="layui/layui.js"></script>
-    <script>
-        layui.config({
-            base: 'js/'
-        }).extend({
-            socket: 'socket'
-        });
-        layui.use(['layim', 'laypage', 'form'], function () {
-            var layim = layui.layim
-                , layer = layui.layer
-                , form = layui.form
-                , laytpl = layui.laytpl
-                , laypage = layui.laypage;
-            form.render();
-            $(function () {
-                getRecommend();
-            });
-
-            function getRecommend() {
-                $.get('getRecommend.do', {token: $.cookie("token")}, function (res) {
-                    console.log(res);
-                    var html = laytpl(LAY_tpl.value).render({
-                        data: res.data,
-                        legend: '推荐好友',
-                        type: 'friend'
-                    });
-                    $('#LAY_view').html(html);
-                });
-            }
-
-            //添加好友
-            $('body').on('click', '.add', function () {
-                var othis = $(this), type = othis.data('type');
-                parent.layui.im.addFriendGroup(othis, type);
-            });
-            //创建群
-            $('body').on('click', '.createGroup', function () {
-                var othis = $(this);
-                parent.layui.im.createGroup(othis);
-            });
-            //返回推荐好友
-            $('body').on('click', '.back', function () {
-                getRecommend();
-                $("#LAY_page").css("display", "none");
-            });
-
-            $("body").keydown(function (event) {
-                if (event.keyCode == 13) {
-                    $(".find").click();
-                }
-            });
-            $('body').on('click', '.find', function () {
-                $("#LAY_page").css("display", "block");
-                var othis = $(this), input = othis.parents('.layui-col-space3').find('input').val();
-                var addType = $('input:radio:checked').val();
-                if (input) {
-                    $.get('findFriendTotal.do', {value: input}, function (res) {
-                        if (res.code != 0) {
-                            return layer.msg(res.msg);
-                        }
-                        laypage.render({
-                            elem: 'LAY_page'
-                            , count: res.data.count
-                            , limit: res.data.limit
-                            , prev: '<i class="layui-icon">&#58970;</i>'
-                            , next: '<i class="layui-icon">&#xe65b;</i>'
-                            , layout: ['prev', 'next']
-                            , curr: res.data.limit
-                            , jump: function (obj, first) {
-                                //obj包含了当前分页的所有参数，比如：
-                                //首次不执行
-                                if (first) {
-                                    var page = res.data.limit;
-                                } else {
-                                    var page = obj.curr;
-                                }
-                                $.get('findFriend.do', {value: input, page: obj.curr || 1}, function (data) {
-                                    var html = laytpl(LAY_tpl.value).render({
-                                        data: data.data,
-                                        legend: '<a class="back"><i class="layui-icon">&#xe65c;/>返回</a> 查找结果',
-                                        type: addType
-                                    });
-                                    $('#LAY_view').html(html);
-                                });
-                            }
-                        });
-                    });
-                }
-            });
-        });
-    </script>
+    <script src="js/find/find.js" ></script>
 </head>
 <body>
 <div class="layui-form">
