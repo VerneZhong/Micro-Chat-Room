@@ -51,7 +51,8 @@ public class LoginFilter implements Filter {
             filterChain.doFilter(request, response);
             return;
         }
-        String token = request.getHeader("token");
+//        String token = request.getHeader("token");
+        String token = (String) ((HttpServletRequest) servletRequest).getSession().getAttribute("token");
         if (StringUtils.isBlank(token)) {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
@@ -61,25 +62,27 @@ public class LoginFilter implements Filter {
                     }
                 }
             }
+            if (StringUtils.isBlank(token)) {
+                // 跳转登录页面
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
         }
-        UserDTO userDTO = null;
-        if (StringUtils.isNotBlank(token)) {
-            // 从缓存里获取
-            userDTO = CACHE.getIfPresent(token);
-            if (userDTO == null) {
+        // 从缓存里获取
+        UserDTO userDTO = CACHE.getIfPresent(token);
+        if (userDTO == null) {
+            if (StringUtils.isNotBlank(token)) {
                 userDTO = (UserDTO) redisClient.get(token);
                 if (userDTO != null) {
                     // 存入缓存
                     CACHE.put(token, userDTO);
+                } else {
+                    // 跳转登录页面
+                    response.sendRedirect(request.getContextPath() + "/login");
+                    return;
                 }
             }
         }
-        if (userDTO == null) {
-            // 跳转登录页面
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-
         filterChain.doFilter(request, response);
     }
 

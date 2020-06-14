@@ -1,23 +1,22 @@
 package com.micro.im.controller;
 
 import com.google.common.collect.Lists;
-import com.micro.common.code.BusinessCode;
 import com.micro.common.constant.FileType;
 import com.micro.common.dto.UserDTO;
 import com.micro.common.response.ResultVO;
 import com.micro.common.util.TokenUtil;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.User;
-import com.micro.im.request.ModifySignReq;
-import com.micro.im.request.UserLoginReq;
-import com.micro.im.request.UserRegisterReq;
+import com.micro.im.req.AddFriendReq;
+import com.micro.im.req.ModifySignReq;
+import com.micro.im.req.UserLoginReq;
+import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.*;
 import com.micro.im.service.FileService;
 import com.micro.im.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +26,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.micro.common.code.BusinessCode.*;
-import static com.micro.common.response.ResultVO.*;
+import static com.micro.common.response.ResultVO.fail;
+import static com.micro.common.response.ResultVO.success;
 
 /**
  * 用户 ctrl
@@ -59,7 +59,12 @@ public class UserController {
         if (StringUtils.isBlank(token)) {
             return fail(PARAM_ERROR);
         }
-        GetListResp resp = userService.getList(getUserDto(token).getId());
+        UserDTO userDto = getUserDto(token);
+        if (userDto == null) {
+            return fail(NO_LOGIN);
+        }
+        Long id = userDto.getId();
+        GetListResp resp = userService.getList(id);
         return success(resp);
     }
 
@@ -105,7 +110,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/login.do")
-    public ResultVO login(@RequestBody UserLoginReq req) {
+    public ResultVO<LoginResp> login(@RequestBody UserLoginReq req){
         log.info("用户登录: {}", req.getAccount());
         User user = userService.login(req.getAccount(), req.getPassword());
         if (user != null) {
@@ -124,7 +129,10 @@ public class UserController {
             // 缓存用户到Redis
             redisClient.set(token, userDTO, 3600);
             redisClient.set(user.getId().toString(), "online");
-            return success(token);
+            LoginResp loginResp = new LoginResp();
+            loginResp.setToken(token);
+            loginResp.setUser(userDTO);
+            return success(loginResp);
         }
         return fail(USER_INVALID);
     }
@@ -263,4 +271,24 @@ public class UserController {
         }).collect(Collectors.toList());
         return success(resps);
     }
+
+    /**
+     * 添加好友
+     * @param
+     */
+    @PostMapping("/addFriend.do")
+    public ResultVO addFriend(@RequestBody AddFriendReq req) {
+        log.info("添加好友req：{}", req);
+        return success();
+    }
+
+    /**
+     * 添加群聊
+     * @param
+     */
+    @PostMapping("/addGroup.do")
+    public ResultVO addGroup() {
+        return success();
+    }
+
 }

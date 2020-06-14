@@ -1,7 +1,11 @@
 package com.micro.im.controller;
 
+import com.micro.common.dto.UserDTO;
+import com.micro.im.entity.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Mr.zxb
@@ -15,7 +19,7 @@ public class PageController {
     }
 
     @GetMapping("/index")
-    public String index() {
+    public String index(HttpServletRequest request) {
         return "index";
     }
 

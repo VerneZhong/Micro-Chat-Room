@@ -1,16 +1,14 @@
 package com.micro.im.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.*;
 import com.micro.im.mapper.*;
-import com.micro.im.request.UserRegisterReq;
+import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
 import com.micro.im.vo.*;

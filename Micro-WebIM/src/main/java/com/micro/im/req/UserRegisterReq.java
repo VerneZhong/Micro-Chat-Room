@@ -1,4 +1,4 @@
-package com.micro.im.request;
+package com.micro.im.req;
 
 import lombok.Data;
 

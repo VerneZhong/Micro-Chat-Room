@@ -6,6 +6,8 @@ import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -14,7 +16,12 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import io.netty.util.concurrent.GlobalEventExecutor;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.micro.common.constant.ServerConstant.*;
 
@@ -32,6 +39,16 @@ public class WsServer {
     private final EventLoopGroup workGroup;
 
     private static WsServer INSTANCE;
+
+    /**
+     * 记录在线人数
+     */
+    private final ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+
+    /**
+     * 记录 chanel - userId 关联关系
+     */
+    public final static Map<Long, Channel> CLIENT_MAP = new ConcurrentHashMap<>();
 
     private WsServer() throws Exception {
         if (Epoll.isAvailable()) {
@@ -81,7 +98,7 @@ public class WsServer {
 
                             // 处理 WebSocket 请求
                             pipeline.addLast(new WebSocketServerProtocolHandler("/im"));
-                            pipeline.addLast(new WebSocketServerHandler());
+                            pipeline.addLast(new WebSocketServerHandler(channelGroup));
                         }
                     })
                     .bind(SERVER_PORT).sync();

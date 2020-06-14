@@ -1,10 +1,9 @@
 package com.micro.im.service;
 
 import com.micro.im.entity.User;
-import com.micro.im.request.UserRegisterReq;
+import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
-import com.micro.im.resp.RecommendResp;
 
 import java.util.List;
 

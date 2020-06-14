@@ -2,7 +2,12 @@ var token = $.cookie("token");
 if (token === null) {
     window.location.href = "/login";
 }
-layui.use('layim', function (layim) {
+//layui绑定扩展
+layui.config({
+    base: 'js/'
+});
+layui.use(['layim', 'jquery'], function (layim) {
+    var $ = layui.jquery;
     //基础配置
     layim.config({
         //获取主面板列表信息，下文会做进一步介绍
@@ -31,24 +36,20 @@ layui.use('layim', function (layim) {
         , find: 'find'
         //聊天记录页面地址
         , chatLog: 'chatlog'
-        //可同时配置多个
-        // ,tool: [{
-        //     alias: 'audio'
-        //     ,title: '音频'
-        //     ,icon: '&#xe6fc;'
-        // },{
-        //     alias: 'video'
-        //     ,title: '视频'
-        //     ,icon: '&#xe6ed;'
-        // }]
         , isAudio: true //开启聊天工具栏音频
         , isVideo: true //开启聊天工具栏视频
         , notice: true //是否开启桌面消息提醒，默认false
-        , voice: true
+        , voice: 'default.mp3'
     });
+
+    layim.on('ready', function (options) {
+        console.log("ready...");
+        console.log(options);
+        //do something
+    });
+
     // ws 地址
     var socket = new WebSocket('ws://localhost:8080/im');
-
     // 连接成功时触发
     socket.onopen = function () {
         console.log('连接服务器成功！');
@@ -58,7 +59,7 @@ layui.use('layim', function (layim) {
     socket.addEventListener('open', function (event) {
         socket.send(JSON.stringify({
             type: "login",
-            token: token
+            uid: $.cookie("uid")
         }));
     });
 
@@ -112,8 +113,6 @@ layui.use('layim', function (layim) {
 
     // 监听发送消息
     layim.on('sendMessage', function (res) {
-        var mine = res.mine;
-        var to = res.to;
         // 发送消息到服务器
         socket.send(JSON.stringify({
             type: 'chatMessage',
@@ -123,13 +122,15 @@ layui.use('layim', function (layim) {
 
     // 接收消息
     socket.onmessage = function (res) {
-        res = JSON.parse(res);
         console.log(res);
         // 事件名称
         var emit = res.emit;
         var data = res.data;
+        console.log(emit);
+        console.log(data);
+        layim.getMessage(JSON.parse(data));
         if (emit === 'chatMessage') {
-            layim.getMessage(data);
+
         }
     };
 

@@ -10,15 +10,15 @@ WebIM.config = {
     /*
      * XMPP server
      */
-    xmppURL: 'im-api.easemob.com',
+    xmppURL: 'localhost',
     /*
      * Backend REST API URL
      */
-    apiURL: (location.protocol === 'https:' ? 'https:' : 'http:') + '//a1.easemob.com',
+    apiURL: (location.protocol === 'https:' ? 'https:' : 'http:') + '//localhost:8080/im',
     /*
      * Application AppKey
      */
-    appkey: 'XXXXXXXXXXXX#XXXXXXX',//修改为自己的
+    appkey: '',//修改为自己的
 
     /*
      * Whether to use wss

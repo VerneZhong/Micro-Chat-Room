@@ -1,6 +1,5 @@
-package com.micro.common.dto;
+package com.micro.im.ws.dto;
 
-import com.micro.common.util.JsonUtil;
 import lombok.Data;
 
 /**
@@ -47,9 +46,4 @@ public class ChatMessage {
      * 当前时间戳毫秒数
      */
     private Long timestamp;
-
-    @Override
-    public String toString() {
-        return JsonUtil.toJson(this);
-    }
 }
