@@ -1,6 +1,7 @@
 package com.micro.im.service;
 
 import com.micro.im.entity.User;
+import com.micro.im.req.AddFriendReq;
 import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
@@ -69,4 +70,10 @@ public interface UserService {
      * @return
      */
     List<User> findUserByAccountAndName(String account, Integer limit);
+
+    /**
+     * 发送添加好友请求
+     * @param addFriendReq
+     */
+    void sendAddFriendReq(AddFriendReq addFriendReq);
 }

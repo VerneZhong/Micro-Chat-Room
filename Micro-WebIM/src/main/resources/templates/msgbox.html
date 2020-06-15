@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>消息盒子</title>
-
     <link rel="stylesheet" href="/layui/css/layui.css?v=1">
     <style>
         .layim-msgbox {
@@ -74,7 +73,6 @@
 <body>
 
 <ul class="layim-msgbox" id="LAY_view"></ul>
-
 <textarea title="消息模版" id="LAY_tpl" style="display:none;">
 {{# layui.each(d.data, function(index, item){
   if(item.from){ }}
@@ -102,12 +100,6 @@
   {{# }
 }); }}
 </textarea>
-
-<!-- 
-上述模版采用了 laytpl 语法，不了解的同学可以去看下文档：http://www.layui.com/doc/modules/laytpl.html 
--->
-
-
 <script src="/layui/layui.js?v=1"></script>
 <script>
     layui.use(['layim', 'flow'], function () {
@@ -121,9 +113,6 @@
 
         //请求消息
         var renderMsg = function (page, callback) {
-
-            //实际部署时，请将下述 getmsg.json 改为你的接口地址
-
             $.get('getMsg.do', {
                 page: page || 1
             }, function (res) {

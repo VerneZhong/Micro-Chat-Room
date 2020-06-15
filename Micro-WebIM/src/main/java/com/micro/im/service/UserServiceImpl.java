@@ -8,6 +8,7 @@ import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.*;
 import com.micro.im.mapper.*;
+import com.micro.im.req.AddFriendReq;
 import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
@@ -297,5 +298,14 @@ public class UserServiceImpl implements UserService {
             map.putIfAbsent(user.getId(), user);
         }
         return new ArrayList<>(map.values());
+    }
+
+    /**
+     * 发送添加好友请求
+     * @param addFriendReq
+     */
+    @Override
+    public void sendAddFriendReq(AddFriendReq addFriendReq) {
+
     }
 }

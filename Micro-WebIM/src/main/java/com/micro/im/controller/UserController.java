@@ -110,7 +110,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/login.do")
-    public ResultVO<LoginResp> login(@RequestBody UserLoginReq req){
+    public ResultVO login(@RequestBody UserLoginReq req){
         log.info("用户登录: {}", req.getAccount());
         User user = userService.login(req.getAccount(), req.getPassword());
         if (user != null) {
@@ -125,14 +125,10 @@ public class UserController {
 
             // 生成token
             String token = TokenUtil.getToken();
-
             // 缓存用户到Redis
             redisClient.set(token, userDTO, 3600);
             redisClient.set(user.getId().toString(), "online");
-            LoginResp loginResp = new LoginResp();
-            loginResp.setToken(token);
-            loginResp.setUser(userDTO);
-            return success(loginResp);
+            return success(token);
         }
         return fail(USER_INVALID);
     }
@@ -282,6 +278,10 @@ public class UserController {
         return success(resps);
     }
 
+    /**
+     * 添加好友分组
+     * @return
+     */
     @PostMapping("/addFriendGroup.do")
     public ResultVO addFriendGroup() {
 
@@ -289,12 +289,23 @@ public class UserController {
     }
 
     /**
-     * 添加好友
+     * 发送添加好友申请请求
+     * @param
+     */
+    @PostMapping("/sendAddFriendReq.do")
+    public ResultVO sendAddFriendReq(@RequestBody AddFriendReq req) {
+        log.info("发送添加好友请求req：{}", req);
+        userService.sendAddFriendReq(req);
+        return success();
+    }
+
+    /**
+     * 确认添加好友申请
      * @param
      */
     @PostMapping("/addFriend.do")
     public ResultVO addFriend(@RequestBody AddFriendReq req) {
-        log.info("添加好友req：{}", req);
+        log.info("确认添加好友申请req：{}", req);
         return success();
     }
 
@@ -306,5 +317,15 @@ public class UserController {
     public ResultVO addGroup() {
         return success();
     }
+
+    /**
+     * 添加群聊
+     * @param
+     */
+    @PostMapping("/getMsg.do")
+    public ResultVO getMsg() {
+        return success();
+    }
+
 
 }

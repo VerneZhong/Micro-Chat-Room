@@ -1,6 +1,5 @@
 layui.use(['form', 'layer'], function () {
     var form = layui.form;
-    // var $ = layui.jquery;
     var layer = layui.layer;
     //监听提交
     form.on('submit(formDemo)', function (data) {
@@ -17,16 +16,11 @@ layui.use(['form', 'layer'], function () {
             success: function (res) {
                 layer.close(index);
                 if (res.code !== 0) {
-                    layer.msg("用户名或密码有误!");
+                    layer.msg(res.msg);
                     $(".layui-input").val('');
                 } else {
-                    var data = res.data;
-                    console.log(data);
-                    let token = data.token;
-                    $.cookie('token', token);
-                    let user = data.user;
-                    $.cookie('uid', user.id);
-                    $.cookie('userAvatar', user.avatar);
+                    let data = res.data;
+                    $.cookie('token', data);
                     window.location.href = "/index";
                 }
             }

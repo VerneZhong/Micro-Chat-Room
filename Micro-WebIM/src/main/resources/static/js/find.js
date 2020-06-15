@@ -15,7 +15,7 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
         , form = layui.form
         , $ = layui.jquery
         , laypage = layui.laypage;
-    var cache = layim.cache();
+    let cache = JSON.parse(window.localStorage.getItem("mine"));
     form.render();
     $(function () {
         getRecommend();
@@ -26,7 +26,6 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
      */
     function getRecommend() {
         $.get('getRecommend.do', {token: $.cookie("token")}, function (res) {
-            console.log(res);
             var html = laytpl(LAY_tpl.value).render({
                 data: res.data,
                 legend: '推荐好友',
@@ -47,11 +46,11 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
             var uid = othis.parent().data('id'), name = othis.parent().data('name');
         }
         var isAdd = false;
-        var mineId = $.cookie("uid");
-        var avatar = $.cookie("userAvatar");
+        var mineId = cache.mine.id;
+        var avatar = cache.mine.avatar;
         if (type === 'friend') {
             var default_avatar = 'image/photo/empty2.jpg';
-            if (mineId === uid) {//添加的是自己
+            if (mineId === uid) {
                 layer.msg('不能添加自己');
                 return false;
             }
@@ -59,7 +58,7 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
                 layui.each(item1.list, function (index, item) {
                     if (item.id === uid) {
                         isAdd = true;
-                    }//是否已经是好友
+                    }
                 });
             });
         } else {
@@ -88,11 +87,12 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
                     $.ajax({
                         type: "post",
                         data: JSON.stringify({
+                            uid: mineId,
                             friend: uid,
                             remark: remark,
                             friendgroup: group
                         }),
-                        url: "addFriend.do",
+                        url: "sendAddFriendReq.do",
                         dataType : 'JSON',
                         contentType: "application/json",
                         success: function (res) {
@@ -146,7 +146,7 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
     //创建群
     $('body').on('click', '.createGroup', function () {
         var othis = $(this);
-        im.createGroup(othis);
+        // im.createGroup(othis);
     });
     //返回推荐好友
     $('body').on('click', '.back', function () {

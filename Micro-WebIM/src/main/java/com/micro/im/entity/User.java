@@ -3,6 +3,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import java.time.LocalDate;
 import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Data;
+
 import java.io.Serializable;
 /**
  * <p>
@@ -12,6 +14,7 @@ import java.io.Serializable;
  * @author Mr.zxb
  * @since 2020-06-10
  */
+@Data
 public class User extends Model<User> {
 
     private static final long serialVersionUID = 1L;
@@ -43,6 +46,11 @@ public class User extends Model<User> {
     private String cellphoneNumber;
 
     /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * 头像
      */
     private String avatarAddress;
@@ -72,133 +80,26 @@ public class User extends Model<User> {
      */
     private String sign;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
-    public String getCellphoneNumber() {
-        return cellphoneNumber;
-    }
-
-    public void setCellphoneNumber(String cellphoneNumber) {
-        this.cellphoneNumber = cellphoneNumber;
-    }
-
-    public String getAvatarAddress() {
-        return avatarAddress;
-    }
-
-    public void setAvatarAddress(String avatarAddress) {
-        this.avatarAddress = avatarAddress;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getArea() {
-        return area;
-    }
-
-    public void setArea(String area) {
-        this.area = area;
-    }
-
-    public Integer getIsLocked() {
-        return isLocked;
-    }
-
-    public void setIsLocked(Integer isLocked) {
-        this.isLocked = isLocked;
-    }
-
-    public LocalDate getRegisterDate() {
-        return registerDate;
-    }
-
-    public void setRegisterDate(LocalDate registerDate) {
-        this.registerDate = registerDate;
-    }
-
-    public String getSign() {
-        return sign;
-    }
-
-    public void setSign(String sign) {
-        this.sign = sign;
-    }
-
     @Override
     protected Serializable pkVal() {
         return null;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-        if (obj instanceof User) {
-            User vo = (User) obj;
-            return vo.getId().equals(this.id) && vo.account.equals(this.account);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.id.hashCode() * this.account.hashCode();
-    }
-
-    @Override
     public String toString() {
         return "User{" +
-        ", id=" + id +
-        ", account=" + account +
-        ", password=" + password +
-        ", nickname=" + nickname +
-        ", cellphoneNumber=" + cellphoneNumber +
-        ", avatarAddress=" + avatarAddress +
-        ", age=" + age +
-        ", area=" + area +
-        ", isLocked=" + isLocked +
-        ", registerDate=" + registerDate +
-        ", sign=" + sign +
-        "}";
+                "id=" + id +
+                ", account='" + account + '\'' +
+                ", password='" + password + '\'' +
+                ", nickname='" + nickname + '\'' +
+                ", cellphoneNumber='" + cellphoneNumber + '\'' +
+                ", email='" + email + '\'' +
+                ", avatarAddress='" + avatarAddress + '\'' +
+                ", age=" + age +
+                ", area='" + area + '\'' +
+                ", isLocked=" + isLocked +
+                ", registerDate=" + registerDate +
+                ", sign='" + sign + '\'' +
+                "} " + super.toString();
     }
 }

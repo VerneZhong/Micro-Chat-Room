@@ -1,9 +1,7 @@
 package com.micro.im.ws.handler;
 
 import com.micro.common.dto.ChatMessage;
-import com.micro.common.protocol.IMP;
 import com.micro.common.util.JsonUtil;
-import com.micro.im.ws.WsServer;
 import com.micro.im.ws.receive.MessageData;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,7 +11,6 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.micro.im.ws.WsServer.CLIENT_MAP;
 
@@ -47,7 +44,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
         String type = JsonUtil.getRootValueByKey(text, "type");
         if (type != null) {
             switch (type) {
-                case "login" :
+                case "login":
                     // 发送上线消息
                     String uid = JsonUtil.getRootValueByKey(text, "uid");
                     if (uid != null) {
@@ -55,7 +52,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                         CLIENT_MAP.put(Long.parseLong(uid), ctx.channel());
                     }
                     break;
-                case "chatMessage" :
+                case "chatMessage":
                     // 发送聊天消息
                     MessageData messageData = JsonUtil.fromJson(text, MessageData.class);
                     MessageData.DataBean data = messageData.getData();
@@ -70,19 +67,17 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                     chatMessage.setFromid(mine.getId());
                     chatMessage.setTimestamp(System.currentTimeMillis());
 
-
                     Channel toChannel = CLIENT_MAP.get(Long.parseLong(data.getTo().getId()));
-
-                    channelGroup.writeAndFlush(new TextWebSocketFrame(chatMessage.toString()), channel -> channel == toChannel);
+                    channelGroup.writeAndFlush(new TextWebSocketFrame(chatMessage.toString()),
+                            channel -> channel == toChannel);
+                    break;
+                case "system":
 
                     break;
-                case "system" :
+                case "logout":
 
                     break;
-                case "logout" :
-
-                    break;
-                case "groupMessage" :
+                case "groupMessage":
 
                     break;
                 default:
@@ -103,7 +98,9 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                 break;
             }
         }
-        CLIENT_MAP.remove(removeId);
+        if (removeId != null) {
+            CLIENT_MAP.remove(removeId);
+        }
     }
 
     @Override

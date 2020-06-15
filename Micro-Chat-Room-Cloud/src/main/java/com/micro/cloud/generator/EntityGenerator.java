@@ -47,7 +47,7 @@ public class EntityGenerator {
      * 待生成的表名，注意是覆盖更新
      */
     private static String[] tableNames = new String[]{
-            "user", "user_friends", "user_friends_group", "group", "user_group_relation"
+            "message"
     };
 
     public void entityGenerator() {

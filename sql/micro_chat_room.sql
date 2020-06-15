@@ -40,6 +40,7 @@ CREATE TABLE `user` (
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户密码',
   `nickname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '昵称',
   `cellphone_number` char(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '手机号码',
+  `email` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '邮箱地址',
   `avatar_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '头像',
   `age` int(3) DEFAULT NULL COMMENT '年龄',
   `area` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '地区',
@@ -85,3 +86,22 @@ CREATE TABLE `user_group_relation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- Table structure for message
+-- ----------------------------
+DROP TABLE IF EXISTS `message`;
+CREATE TABLE `message` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '消息ID',
+  `type` tinyint(1) NOT NULL COMMENT '消息类型（1为请求添加用户消息）；2为系统消息（添加好友）；3为请求加群消息；4为系统消息（添加群系统消息）；5为全体用户消息',
+  `form` bigint(20) NOT NULL COMMENT '消息发送者（0表示为系统消息）',
+  `to` bigint(20) NOT NULL COMMENT '消息接收者（0位全体用户）',
+  `status` tinyint(4) NOT NULL COMMENT '1未读，2同意，3拒绝，4同意且返回消息已读，5拒绝且返回消息已读，6全体消息已读',
+  `remark` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '附加消息',
+  `sendTime` date DEFAULT NULL COMMENT '发送消息时间',
+  `readTime` date DEFAULT NULL COMMENT '读取消息时间',
+  `adminGroup` bigint(20) DEFAULT NULL COMMENT '接收消息的管理员',
+  `handler` bigint(20) DEFAULT NULL COMMENT '处理该请求的管理员ID',
+  `friend_groupid` bigint(20) DEFAULT NULL COMMENT '好友分组',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

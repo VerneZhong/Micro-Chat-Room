@@ -1,16 +1,14 @@
-var token = $.cookie("token");
-if (token === null) {
-    window.location.href = "/login";
-}
-//layui绑定扩展
+/**
+ * index.js
+ */
 layui.config({
     base: 'js/'
 });
+let token = $.cookie("token");
 layui.use(['layim', 'jquery'], function (layim) {
-    var $ = layui.jquery;
+    let $ = layui.jquery;
     //基础配置
     layim.config({
-        //获取主面板列表信息，下文会做进一步介绍
         init: {
             url: 'getList.do?token=' + token
         }
@@ -42,14 +40,15 @@ layui.use(['layim', 'jquery'], function (layim) {
         , voice: 'default.mp3'
     });
 
-    layim.on('ready', function (options) {
-        console.log("ready...");
-        console.log(options);
-        //do something
-    });
-
     // ws 地址
     var socket = new WebSocket('ws://localhost:8080/im');
+
+    // 获取基础信息
+    layim.on('ready', function (options) {
+        // 存储用户数据到本地
+        window.localStorage.setItem("mine", JSON.stringify(options));
+    });
+
     // 连接成功时触发
     socket.onopen = function () {
         console.log('连接服务器成功！');
@@ -57,9 +56,10 @@ layui.use(['layim', 'jquery'], function (layim) {
 
     // Connection opened
     socket.addEventListener('open', function (event) {
+        let cache = JSON.parse(window.localStorage.getItem("mine"));
         socket.send(JSON.stringify({
             type: "login",
-            uid: $.cookie("uid")
+            uid: cache.mine.id
         }));
     });
 
@@ -79,7 +79,7 @@ layui.use(['layim', 'jquery'], function (layim) {
             type: "get",
             headers: {      //请求头
                 Accept: "application/json; charset=utf-8",
-                token: "" + token  //这是获取的token
+                token: token  //这是获取的token
             },
             url: "modifyStatus.do?status=" + status,
             contentType: "application/json",
@@ -95,7 +95,7 @@ layui.use(['layim', 'jquery'], function (layim) {
             type: "post",
             headers: {      //请求头
                 Accept: "application/json; charset=utf-8",
-                token: "" + token  //这是获取的token
+                token: token
             },
             url: "modifySign.do",
             data: JSON.stringify({sign: sign}),
@@ -149,8 +149,6 @@ layui.use(['layim', 'jquery'], function (layim) {
         if (type === 'friend') {
             layim.setChatStatus('<span style="color:#FF5722;">在线</span>')
         } else {
-            // 模拟系统消息
-            // layim.getMessage(res.data);
             layim.getMessage({
                 system: true //系统消息
                 , id: 111111111
@@ -159,6 +157,7 @@ layui.use(['layim', 'jquery'], function (layim) {
             });
         }
     });
+
 
     // 弹出添加好友面板
     // layim.add({
