@@ -138,6 +138,16 @@ public class UserController {
     }
 
     /**
+     * 登出
+     * @return
+     */
+    @GetMapping("/logout")
+    public ResultVO logout() {
+
+        return success();
+    }
+
+    /**
      * 上传图片
      * @param file
      * @return
@@ -270,6 +280,12 @@ public class UserController {
             return resp;
         }).collect(Collectors.toList());
         return success(resps);
+    }
+
+    @PostMapping("/addFriendGroup.do")
+    public ResultVO addFriendGroup() {
+
+        return success();
     }
 
     /**

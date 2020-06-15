@@ -66,21 +66,23 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                     chatMessage.setId(mine.getId());
                     chatMessage.setType(data.getTo().getType());
                     chatMessage.setContent(mine.getContent());
-                    chatMessage.setMine(true);
+                    chatMessage.setMine(false);
                     chatMessage.setFromid(mine.getId());
                     chatMessage.setTimestamp(System.currentTimeMillis());
 
-                    Channel mineChannel = CLIENT_MAP.get(Long.parseLong(mine.getId()));
-                    for (Channel channel : channelGroup) {
-                        if (mineChannel != channel) {
-                            channelGroup.writeAndFlush(new TextWebSocketFrame(chatMessage.toString()));
-                        }
-                    }
+
+                    Channel toChannel = CLIENT_MAP.get(Long.parseLong(data.getTo().getId()));
+
+                    channelGroup.writeAndFlush(new TextWebSocketFrame(chatMessage.toString()), channel -> channel == toChannel);
+
                     break;
                 case "system" :
 
                     break;
                 case "logout" :
+
+                    break;
+                case "groupMessage" :
 
                     break;
                 default:

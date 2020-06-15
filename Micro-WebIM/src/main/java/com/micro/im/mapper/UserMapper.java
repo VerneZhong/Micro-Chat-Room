@@ -13,10 +13,4 @@ import com.micro.im.entity.User;
  */
 public interface UserMapper extends BaseMapper<User> {
 
-    /**
-     * 查询数量
-     * @return
-     */
-    Integer selectCount();
-
 }

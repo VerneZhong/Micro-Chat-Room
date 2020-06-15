@@ -18,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -205,11 +208,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void register(UserRegisterReq req) {
-        Integer integer = userMapper.selectCount();
         User user = new User();
-        if (integer == 0) {
-            user.setId(10000L);
-        }
         user.setAccount(req.getAccount());
         user.setPassword(MD5Util.md5(req.getPassword()));
         user.setNickname(req.getNickname());

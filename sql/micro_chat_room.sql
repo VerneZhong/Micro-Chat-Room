@@ -48,7 +48,7 @@ CREATE TABLE `user` (
   `sign` varchar(2000) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '签名',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `nickname_index` (`nickname`(191)) USING BTREE COMMENT '账号唯一索引'
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=10000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=COMPACT;
 
 -- ----------------------------
 -- Table structure for user_friends
