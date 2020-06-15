@@ -5,10 +5,10 @@
     <title>Micro-WebIM 注册</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
-<link rel="stylesheet" href="/css/theme.min.css" media="all">
 <link rel="stylesheet" href="layui/css/layui.css" media="all">
+<link rel="stylesheet" href="/css/theme.min.css" media="all">
+<script src="js/lib/jquery.min.js"></script>
 <script src="layui/layui.js"></script>
-<base href="${basePath}">
 <script>
     layui.use(['form', 'jquery', 'layer'], function () {
         var form = layui.form;
@@ -31,12 +31,12 @@
                 , '密码必须6到12位，且不能出现空格'
             ]
         });
-        $("#account").change(function(){
+        $("#account").change(function () {
             var account = $("#account").val();
             $.ajax({
                 type: "get",
                 url: "accountExists.do?account=" + account,
-                dataType : 'JSON',
+                dataType: 'JSON',
                 success: function (data) {
                     if (data.data === true) {
                         layer.msg("该用户名已存在!")
@@ -51,7 +51,7 @@
                 type: "post",
                 data: JSON.stringify(data.field),
                 url: "register.do",
-                dataType : 'JSON',
+                dataType: 'JSON',
                 contentType: "application/json",
                 success: function (data) {
                     console.log(data);
@@ -76,7 +76,56 @@
             });
             return false;
         });
+
+        $(document).on('click', '#emailVerifyCode', function () {
+            sendVerifyCode();
+        });
+        //timer变量，控制时间
+        //间隔函数，1秒执行
+        var InterValObj;
+        var count = 60;
+        //当前剩余秒数
+        var curCount;
+
+        //向邮箱发送验证码
+        function sendVerifyCode() {
+            // 设置button效果，开始计时
+            curCount = count;
+            document.getElementById("emailVerifyCode").setAttribute("disabled", "true");//设置按钮为禁用状态
+            document.getElementById("emailVerifyCode").value = curCount + "秒后重获";//更改按钮文字
+            InterValObj = window.setInterval(SetRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
+
+            //请求发送验证码
+            $.ajax({
+                type: "get",
+                url: "sendVerifyCode.do",
+                async: true,
+                data: {"email": $("#email").val()},
+                success: function (res) {
+                    //验证码发送成功
+                    if (res.code === 0) {
+                        $('#emailTip').html("<font color='#339933'>√ 邮箱验证码已发到您的手机,请查收</font>");
+                    } else {
+                        $("#emailTip").html("<font color='red'>× 短信验证码发送失败，请重新发送</font>");
+                    }
+                },
+                dataType: "json"
+            });
+        }
+
+        //timer处理函数
+        function SetRemainTime() {
+            if (curCount == 0) {//超时重新获取验证码
+                window.clearInterval(InterValObj);// 停止计时器
+                document.getElementById("emailVerifyCode").removeAttribute("disabled");//移除禁用状态改为可用
+                document.getElementById("emailVerifyCode").value = "重获验证码";
+            } else {
+                curCount--;
+                document.getElementById("emailVerifyCode").value = curCount + "秒后重获";
+            }
+        }
     });
+
 </script>
 <body class="d-flex align-items-center bg-auth border-top border-top-2 border-primary" style="display: block;">
 <div class="container">
@@ -96,7 +145,8 @@
             <form class="layui-form" action="register.json" method="post">
                 <div class="form-group">
                     <label>帐号</label>
-                    <input id="account" type="text" name="account" required lay-verify="required" class="form-control layui-input"
+                    <input id="account" type="text" name="account" required lay-verify="required"
+                           class="form-control layui-input"
                            autocomplete="off" placeholder="请输入帐号">
                 </div>
                 <div class="form-group">
@@ -105,20 +155,46 @@
                            autocomplete="off" placeholder="请输入昵称">
                 </div>
                 <div class="form-group">
-                    <div class="row">
-                        <div class="col">
-                            <!-- Label -->
-                            <label>密码</label>
-                        </div>
-                    </div>
+                    <label>密码</label>
                     <div class="input-group">
                         <input type="password" name="password" required lay-verify="pass" placeholder="请输入密码"
                                autocomplete="off" class="form-control layui-input">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-lg btn-block btn-primary mb-3" lay-submit lay-filter="formDemo">
-                    注册
-                </button>
+                <div class="form-group">
+                    <label>邮箱</label>
+                    <input type="email" id="email" name="email" required lay-verify="required|email"
+                           class="form-control layui-input"
+                           autocomplete="off" placeholder="请输入邮件地址">
+                </div>
+                <div class="layui-form-item form-group">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">邮箱验证码</label>
+                        <div class="layui-input-inline" style="width: 100px;">
+                            <input type="text" name="verifyCode" lay-verify="required" placeholder="请输入邮箱验证码"
+                                   autocomplete="off" class="form-control layui-input">
+                        </div>
+                        <div class="layui-input-inline" style="width: 100px;">
+                            <input id="emailVerifyCode" name="emailVerifyCode" type="button"
+                                   class="form-control layui-btn layui-btn-normal" value="获取验证码"/>
+                        </div>
+                    </div>
+<!--                <div class="form-group">-->
+<!--                    <label>验证码</label>-->
+<!--                    <input type="text" name="verify" placeholder ="请输入验证码" class="" /><input id="emailVerifyCode" type="button" value="发送验证码" class="verify_code" />-->
+<!--                                        <input type="text" name="verifyCode" lay-verify="required" placeholder="请输入邮箱验证码"-->
+<!--                           autocomplete="off" class="form-control layui-input">-->
+<!--                    <input id="emailVerifyCode" name="emailVerifyCode" type="button"-->
+<!--                           class="form-control layui-btn layui-btn-normal" value="获取验证码"/>-->
+<!--                </div>-->
+                <div class="form-group">
+                    <span id="emailTip"></span>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-lg btn-block btn-primary mb-3" lay-submit lay-filter="formDemo">
+                        注册
+                    </button>
+                </div>
                 <div class="text-center">
                     <small class="text-muted text-center">
                         已有帐号? <a href="login">登录</a>.

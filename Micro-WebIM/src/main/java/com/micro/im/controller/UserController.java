@@ -13,6 +13,7 @@ import com.micro.im.req.UserLoginReq;
 import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.*;
 import com.micro.im.service.FileService;
+import com.micro.im.service.MessageService;
 import com.micro.im.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -48,8 +50,12 @@ public class UserController {
     @Autowired
     private FileService fileService;
 
+    @Autowired
+    private MessageService messageService;
+
     /**
      * 获取用户和好友列表信息
+     *
      * @param token
      * @return
      */
@@ -70,6 +76,7 @@ public class UserController {
 
     /**
      * 获取群员列表
+     *
      * @param id
      * @return
      */
@@ -81,19 +88,47 @@ public class UserController {
     }
 
     /**
+     * 发送邮件验证码
+     * @param email
+     * @return
+     */
+    @GetMapping("/sendVerifyCode.do")
+    public ResultVO sendVerifyCode(@RequestParam String email) {
+        String code = TokenUtil.randomCode("0123456789", 6);
+        String message = "验证码：" + code;
+        boolean result;
+        if (StringUtils.isNoneBlank(email)) {
+            result = messageService.sendEmailMessage(email, message);
+            if (!result) {
+                return fail(SEND_VERIFY_CODE_FAILED);
+            }
+            redisClient.set(email, code);
+            return success();
+        } else {
+            return fail(EMAIL_REQUIRED);
+        }
+    }
+
+    /**
      * 注册用户
+     *
      * @param userRegisterReq
      * @return
      */
     @PostMapping("/register.do")
     public ResultVO register(@RequestBody UserRegisterReq userRegisterReq) {
         log.info("注册新用户: {}", userRegisterReq.getNickname());
+        String redisCode = (String) redisClient.get(userRegisterReq.getEmail());
+        if (!Objects.equals(userRegisterReq.getVerifyCode(), redisCode)) {
+            return fail(VERIFY_CODE_INVALID);
+        }
         userService.register(userRegisterReq);
         return success();
     }
 
     /**
      * 账号是否已存在
+     *
      * @param account
      * @return
      */
@@ -106,11 +141,12 @@ public class UserController {
 
     /**
      * 用户登录
+     *
      * @param req
      * @return
      */
     @PostMapping("/login.do")
-    public ResultVO login(@RequestBody UserLoginReq req){
+    public ResultVO login(@RequestBody UserLoginReq req) {
         log.info("用户登录: {}", req.getAccount());
         User user = userService.login(req.getAccount(), req.getPassword());
         if (user != null) {
@@ -135,6 +171,7 @@ public class UserController {
 
     /**
      * 登出
+     *
      * @return
      */
     @GetMapping("/logout")
@@ -145,6 +182,7 @@ public class UserController {
 
     /**
      * 上传图片
+     *
      * @param file
      * @return
      */
@@ -157,6 +195,7 @@ public class UserController {
 
     /**
      * 上传文件
+     *
      * @param file
      * @return
      */
@@ -169,6 +208,7 @@ public class UserController {
 
     /**
      * 修改在线状态
+     *
      * @param request
      * @param status
      * @return
@@ -186,6 +226,7 @@ public class UserController {
 
     /**
      * 修改签名
+     *
      * @param request
      * @param req
      * @return
@@ -208,7 +249,7 @@ public class UserController {
         return getUserDto(request.getHeader("token"));
     }
 
-    private UserDTO getUserDto(String  token) {
+    private UserDTO getUserDto(String token) {
         if (token == null) {
             return null;
         }
@@ -217,6 +258,7 @@ public class UserController {
 
     /**
      * 获取好友推荐
+     *
      * @param token
      * @return
      */
@@ -241,6 +283,7 @@ public class UserController {
 
     /**
      * 拒绝好友添加
+     *
      * @return
      */
     @PostMapping("/refuseFriend.do")
@@ -250,6 +293,7 @@ public class UserController {
 
     /**
      * 根据昵称或账号查找好友总数
+     *
      * @return
      */
     @GetMapping("/findFriendTotal.do")
@@ -261,6 +305,7 @@ public class UserController {
 
     /**
      * 根据昵称或是账号查找好友列表
+     *
      * @return
      */
     @GetMapping("/findFriend.do")
@@ -280,6 +325,7 @@ public class UserController {
 
     /**
      * 添加好友分组
+     *
      * @return
      */
     @PostMapping("/addFriendGroup.do")
@@ -290,6 +336,7 @@ public class UserController {
 
     /**
      * 发送添加好友申请请求
+     *
      * @param
      */
     @PostMapping("/sendAddFriendReq.do")
@@ -301,6 +348,7 @@ public class UserController {
 
     /**
      * 确认添加好友申请
+     *
      * @param
      */
     @PostMapping("/addFriend.do")
@@ -311,6 +359,7 @@ public class UserController {
 
     /**
      * 添加群聊
+     *
      * @param
      */
     @PostMapping("/addGroup.do")
@@ -320,6 +369,7 @@ public class UserController {
 
     /**
      * 添加群聊
+     *
      * @param
      */
     @PostMapping("/getMsg.do")

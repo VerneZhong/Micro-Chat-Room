@@ -6,8 +6,8 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/micro_chat_room?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT-8
     username: root
-    password: '@Wwindows8'
-#    password: 'zxbqq'
+#    password: '@Wwindows8'
+    password: 'zxbqq'
     hikari:
       minimum-idle: 5
       maximum-pool-size: 10
@@ -32,11 +32,29 @@ spring:
       file-size-threshold: 2KB
       max-request-size: 30MB
 
+# Mybatis
 mybatis:
   mapper-locations: classpath:com/micro/im/mapper/xml/*.xml
   type-aliases-package: com.micro.im.entity
 
+# Redis 缓存配置
 cache:
   timeout: 60
   cacheExpirations:
     myControlledCache: 180
+
+# 邮件配置
+mail:
+  smtp:
+    #服务器主机名
+    host: smtp.qq.com
+    #你的邮箱地址
+    username: 171980062@qq.com
+    #授权码
+    password: nvgzpmqoxcwjbjgf
+    #编码格式
+    defaultEncoding: utf-8
+    #是否进行用户名密码校验
+    auth: true
+    #设置超时时间
+    timeout: 20000

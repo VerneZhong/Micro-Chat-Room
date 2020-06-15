@@ -10,5 +10,7 @@ import lombok.Data;
 public class UserRegisterReq {
     private String account;
     private String nickname;
+    private String email;
+    private String verifyCode;
     private String password;
 }
