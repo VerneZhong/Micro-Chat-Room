@@ -102,7 +102,7 @@
             $("#emailVerifyCode").attr("disabled", true);
             $("#emailVerifyCode").val(curCount + "秒后重获");//更改按钮文字
             InterValObj = window.setInterval(setRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
-
+            $('#emailTip').html("<font color='#339933'>正在发送验证码到您的邮箱...</font>");
             //请求发送验证码
             $.ajax({
                 type: "post",
@@ -118,19 +118,24 @@
                     if (res.code === 0) {
                         $('#emailTip').html("<font color='#339933'>√ 验证码已发送到您的邮箱,请查收</font>");
                     } else {
-                        $("#emailTip").html("<font color='red'>× 验证码发送失败，请重新发送</font>");
+                        $("#emailTip").html("<font color='red'>X 验证码发送失败，请重新发送</font>");
+                        cleanCodeAttr();
                     }
                 }
             });
         }
 
+        function cleanCodeAttr() {
+            window.clearInterval(InterValObj);// 停止计时器
+            $("#emailVerifyCode").removeClass("layui-btn-disabled");
+            $("#emailVerifyCode").attr("disabled", false);
+            $("#emailVerifyCode").val("重新获验证码");
+        }
+
         //timer处理函数
         function setRemainTime() {
             if (curCount === 0) {//超时重新获取验证码
-                window.clearInterval(InterValObj);// 停止计时器
-                $("#emailVerifyCode").removeClass("layui-btn-disabled");
-                $("#emailVerifyCode").attr("disabled", false);
-                $("#emailVerifyCode").val("重获验证码");
+                cleanCodeAttr();
             } else {
                 curCount--;
                 $("#emailVerifyCode").val(curCount + "秒后重获");
