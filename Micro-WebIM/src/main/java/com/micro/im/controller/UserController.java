@@ -7,10 +7,7 @@ import com.micro.common.response.ResultVO;
 import com.micro.common.util.TokenUtil;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.User;
-import com.micro.im.req.AddFriendReq;
-import com.micro.im.req.ModifySignReq;
-import com.micro.im.req.UserLoginReq;
-import com.micro.im.req.UserRegisterReq;
+import com.micro.im.req.*;
 import com.micro.im.resp.*;
 import com.micro.im.service.FileService;
 import com.micro.im.service.MessageService;
@@ -89,20 +86,22 @@ public class UserController {
 
     /**
      * 发送邮件验证码
-     * @param email
+     * @param req
      * @return
      */
-    @GetMapping("/sendVerifyCode.do")
-    public ResultVO sendVerifyCode(@RequestParam String email) {
+    @PostMapping("/sendVerifyCode.do")
+    public ResultVO sendVerifyCode(@RequestBody VerifyCodeReq req) {
+        log.info("发送邮件验证码：{}", req);
         String code = TokenUtil.randomCode("0123456789", 6);
         String message = "验证码：" + code;
         boolean result;
-        if (StringUtils.isNoneBlank(email)) {
-            result = messageService.sendEmailMessage(email, message);
+        if (StringUtils.isNoneBlank(req.getEmail())) {
+            result = messageService.sendEmailMessage(req.getEmail(), message);
             if (!result) {
                 return fail(SEND_VERIFY_CODE_FAILED);
             }
-            redisClient.set(email, code);
+            // 120s 过期
+            redisClient.set(req.getEmail(), code, 120);
             return success();
         } else {
             return fail(EMAIL_REQUIRED);

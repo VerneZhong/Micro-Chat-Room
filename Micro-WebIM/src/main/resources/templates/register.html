@@ -78,6 +78,12 @@
         });
 
         $(document).on('click', '#emailVerifyCode', function () {
+            var email = $("#email").val();
+            if (!email.match(/^[a-z0-9]+([._]*[a-z0-9]+)*@[a-z0-9]+([_.][a-z0-9]+)+$/gi)) {
+                layer.msg("邮箱格式不正确！请重新输入");
+                $("#email").val('');
+                return;
+            }
             sendVerifyCode();
         });
         //timer变量，控制时间
@@ -91,41 +97,46 @@
         function sendVerifyCode() {
             // 设置button效果，开始计时
             curCount = count;
-            document.getElementById("emailVerifyCode").setAttribute("disabled", "true");//设置按钮为禁用状态
-            document.getElementById("emailVerifyCode").value = curCount + "秒后重获";//更改按钮文字
-            InterValObj = window.setInterval(SetRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
+            //设置按钮为禁用状态
+            $("#emailVerifyCode").addClass("layui-btn-disabled");
+            $("#emailVerifyCode").attr("disabled", true);
+            $("#emailVerifyCode").val(curCount + "秒后重获");//更改按钮文字
+            InterValObj = window.setInterval(setRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
 
             //请求发送验证码
             $.ajax({
-                type: "get",
+                type: "post",
                 url: "sendVerifyCode.do",
                 async: true,
-                data: {"email": $("#email").val()},
+                dataType: 'JSON',
+                contentType: "application/json",
+                data: JSON.stringify({
+                    email: $("#email").val()
+                }),
                 success: function (res) {
                     //验证码发送成功
                     if (res.code === 0) {
-                        $('#emailTip').html("<font color='#339933'>√ 邮箱验证码已发到您的手机,请查收</font>");
+                        $('#emailTip').html("<font color='#339933'>√ 验证码已发送到您的邮箱,请查收</font>");
                     } else {
-                        $("#emailTip").html("<font color='red'>× 短信验证码发送失败，请重新发送</font>");
+                        $("#emailTip").html("<font color='red'>× 验证码发送失败，请重新发送</font>");
                     }
-                },
-                dataType: "json"
+                }
             });
         }
 
         //timer处理函数
-        function SetRemainTime() {
-            if (curCount == 0) {//超时重新获取验证码
+        function setRemainTime() {
+            if (curCount === 0) {//超时重新获取验证码
                 window.clearInterval(InterValObj);// 停止计时器
-                document.getElementById("emailVerifyCode").removeAttribute("disabled");//移除禁用状态改为可用
-                document.getElementById("emailVerifyCode").value = "重获验证码";
+                $("#emailVerifyCode").removeClass("layui-btn-disabled");
+                $("#emailVerifyCode").attr("disabled", false);
+                $("#emailVerifyCode").val("重获验证码");
             } else {
                 curCount--;
-                document.getElementById("emailVerifyCode").value = curCount + "秒后重获";
+                $("#emailVerifyCode").val(curCount + "秒后重获");
             }
         }
     });
-
 </script>
 <body class="d-flex align-items-center bg-auth border-top border-top-2 border-primary" style="display: block;">
 <div class="container">
@@ -167,31 +178,28 @@
                            class="form-control layui-input"
                            autocomplete="off" placeholder="请输入邮件地址">
                 </div>
-                <div class="layui-form-item form-group">
-                    <div class="layui-inline">
-                        <label class="layui-form-label">邮箱验证码</label>
-                        <div class="layui-input-inline" style="width: 100px;">
+                <div class="form-group">
+                    <label>邮箱验证码</label>
+                </div>
+                <div class="form-group" style="margin-top: -5%;">
+                    <div class="layui-inline" style="width: 104%;">
+                        <div class="layui-input-inline" style="width: 62%;">
                             <input type="text" name="verifyCode" lay-verify="required" placeholder="请输入邮箱验证码"
                                    autocomplete="off" class="form-control layui-input">
                         </div>
-                        <div class="layui-input-inline" style="width: 100px;">
-                            <input id="emailVerifyCode" name="emailVerifyCode" type="button"
-                                   class="form-control layui-btn layui-btn-normal" value="获取验证码"/>
+                        <div class="layui-input-inline" style="width: 36%;">
+                            <input id="emailVerifyCode" name="emailVerifyCode" type="button" class="layui-btn layui-btn-normal" value="获取验证码" />
+<!--                                   style="width: 120px;height: 39px;text-align: center;background-color: white;border: 1px solid #E2E2E2"-->
+<!--                                   class="form-control layui-btn-normal" value="获取验证码"/>-->
                         </div>
                     </div>
-<!--                <div class="form-group">-->
-<!--                    <label>验证码</label>-->
-<!--                    <input type="text" name="verify" placeholder ="请输入验证码" class="" /><input id="emailVerifyCode" type="button" value="发送验证码" class="verify_code" />-->
-<!--                                        <input type="text" name="verifyCode" lay-verify="required" placeholder="请输入邮箱验证码"-->
-<!--                           autocomplete="off" class="form-control layui-input">-->
-<!--                    <input id="emailVerifyCode" name="emailVerifyCode" type="button"-->
-<!--                           class="form-control layui-btn layui-btn-normal" value="获取验证码"/>-->
-<!--                </div>-->
-                <div class="form-group">
-                    <span id="emailTip"></span>
+                    <div class="form-group" style="margin-top: 2%;">
+                        <span id="emailTip" style="margin: 10%"></span>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <button type="submit" class="btn btn-lg btn-block btn-primary mb-3" lay-submit lay-filter="formDemo">
+                    <button type="submit" class="btn btn-lg btn-block btn-primary mb-3" lay-submit
+                            lay-filter="formDemo">
                         注册
                     </button>
                 </div>

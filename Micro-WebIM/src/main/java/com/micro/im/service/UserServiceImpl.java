@@ -213,6 +213,7 @@ public class UserServiceImpl implements UserService {
         user.setAccount(req.getAccount());
         user.setPassword(MD5Util.md5(req.getPassword()));
         user.setNickname(req.getNickname());
+        user.setEmail(req.getEmail());
         // 默认头像
         user.setAvatarAddress("/image/photo/qq.png");
         user.setRegisterDate(LocalDate.now());
@@ -224,8 +225,6 @@ public class UserServiceImpl implements UserService {
         userFriendsGroup.setUserId(user.getId());
         userFriendsGroupMapper.insert(userFriendsGroup);
     }
-
-
 
     /**
      * 账号是否已存在
