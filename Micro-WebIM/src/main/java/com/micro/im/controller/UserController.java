@@ -267,15 +267,7 @@ public class UserController {
         UserDTO userDto = getUserDto(token);
         if (userDto != null) {
             List<User> users = userService.getRecommend(userDto.getId());
-            List<RecommendResp> resps = users.stream().map(user -> {
-                RecommendResp resp = new RecommendResp();
-                resp.setId(user.getId().toString());
-                resp.setNickname(user.getNickname());
-                resp.setAvatar(user.getAvatarAddress());
-                resp.setSign(Optional.ofNullable(user.getSign()).orElse(""));
-                return resp;
-            }).collect(Collectors.toList());
-            return success(resps);
+            return getResultVO(users);
         }
         return success(Lists.newArrayList());
     }
@@ -311,7 +303,11 @@ public class UserController {
     public ResultVO findFriend(@RequestParam String value, @RequestParam Integer page) {
         log.info("根据账号或昵称查找好友: {}:{}", value, page);
         List<User> users = userService.findUserByAccountAndName(value, page);
-        List<RecommendResp> resps = users.stream().map(user -> {
+        return getResultVO(users);
+    }
+
+    private ResultVO getResultVO(List<User> users) {
+        List<RecommendResp> recommendResp = users.stream().map(user -> {
             RecommendResp resp = new RecommendResp();
             resp.setId(user.getId().toString());
             resp.setNickname(user.getNickname());
@@ -319,7 +315,7 @@ public class UserController {
             resp.setSign(Optional.ofNullable(user.getSign()).orElse(""));
             return resp;
         }).collect(Collectors.toList());
-        return success(resps);
+        return success(recommendResp);
     }
 
     /**

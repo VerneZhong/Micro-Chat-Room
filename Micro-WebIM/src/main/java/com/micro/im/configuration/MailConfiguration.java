@@ -33,10 +33,13 @@ public class MailConfiguration {
         mailSender.setHost(host);
         mailSender.setUsername(username);
         mailSender.setPassword(password);
+        mailSender.setPort(587);
         mailSender.setDefaultEncoding(encoding);
         Properties properties = new Properties();
-        properties.setProperty("mail.smtp.auth", auth);
-        properties.setProperty("mail.smtp.timeout", timeout);
+        properties.put("mail.smtp.auth", auth);
+        properties.put("mail.smtp.timeout", timeout);
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
         mailSender.setJavaMailProperties(properties);
         return mailSender;
     }

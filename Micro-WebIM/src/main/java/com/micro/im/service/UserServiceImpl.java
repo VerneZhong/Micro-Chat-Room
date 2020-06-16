@@ -13,12 +13,15 @@ import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
 import com.micro.im.vo.*;
+import com.micro.im.ws.WsServer;
+import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +55,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserFriendsMapper userFriendsMapper;
+
+    @Autowired
+    private IMMessageMapper imMessageMapper;
 
     /**
      * 获取用户list
@@ -301,10 +307,28 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 发送添加好友请求
-     * @param addFriendReq
+     * @param req
      */
     @Override
-    public void sendAddFriendReq(AddFriendReq addFriendReq) {
+    public void sendAddFriendReq(AddFriendReq req) {
+        // 判断好友是否在线
+        String status = (String) redisClient.get(req.getFriend().toString());
+        if ("online".equals(status)) {
+            // 发送ws消息给好友
+            Channel channel = WsServer.CLIENT_MAP.get(req.getFriend());
+//            channel.writeAndFlush();
+        } else {
+            // 将离线消息存入到mysql中
+            Message message = new Message();
+            message.setType(1);
+            message.setForm(req.getMineId());
+            message.setTo(req.getFriend());
+            message.setFriendGroupid(req.getFriendgroup());
+            message.setRemark(req.getRemark());
+            message.setStatus(1);
+            message.setSendTime(LocalDateTime.now());
 
+            imMessageMapper.insert(message);
+        }
     }
 }

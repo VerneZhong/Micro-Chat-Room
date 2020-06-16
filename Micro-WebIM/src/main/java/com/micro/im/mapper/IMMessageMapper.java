@@ -11,6 +11,6 @@ import com.micro.im.entity.Message;
  * @author Mr.zxb
  * @since 2020-06-15
  */
-public interface MessageMapper extends BaseMapper<Message> {
+public interface IMMessageMapper extends BaseMapper<Message> {
 
 }
