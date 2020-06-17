@@ -1,10 +1,15 @@
 package com.micro.im.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.micro.im.entity.MessageBox;
 import com.micro.im.entity.User;
+import com.micro.im.req.AddFriendGroupReq;
 import com.micro.im.req.AddFriendReq;
+import com.micro.im.req.MsgBoxReq;
 import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
+import com.micro.im.resp.MsgBoxResp;
 
 import java.util.List;
 
@@ -76,4 +81,25 @@ public interface UserService {
      * @param addFriendReq
      */
     void sendAddFriendReq(AddFriendReq addFriendReq);
+
+    /**
+     * 添加好友分组
+     * @param req
+     */
+    void addFriendGroup(AddFriendGroupReq req);
+
+    /**
+     * 好友分组是否存在
+     * @param userId
+     * @param name
+     * @return
+     */
+    boolean friendGroupExists(Long userId, String name);
+
+    /**
+     * 获取消息盒子消息
+     * @param req
+     * @return
+     */
+    List<MsgBoxResp> getMessageBox(MsgBoxReq req);
 }

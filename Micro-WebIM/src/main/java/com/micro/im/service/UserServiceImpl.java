@@ -8,13 +8,18 @@ import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.*;
 import com.micro.im.mapper.*;
+import com.micro.im.req.AddFriendGroupReq;
 import com.micro.im.req.AddFriendReq;
+import com.micro.im.req.MsgBoxReq;
 import com.micro.im.req.UserRegisterReq;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
+import com.micro.im.resp.MsgBoxResp;
 import com.micro.im.vo.*;
 import com.micro.im.ws.WsServer;
+import com.micro.im.ws.dto.AddFriendMessage;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +63,7 @@ public class UserServiceImpl implements UserService {
     private UserFriendsMapper userFriendsMapper;
 
     @Autowired
-    private IMMessageMapper imMessageMapper;
+    private MessageBoxMapper messageBoxMapper;
 
     /**
      * 获取用户list
@@ -67,13 +73,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public GetListResp getList(Long userId) {
         // 当前用户
-        Mine mine = new Mine();
-        User user = userMapper.selectById(userId);
-        mine.setId(String.valueOf(userId));
-        mine.setUsername(user.getNickname());
-        mine.setStatus((String) redisClient.get(userId.toString()));
-        mine.setAvatar(user.getAvatarAddress());
-        mine.setSign(user.getSign());
+        Mine mine = getMine(userId);
 
         // 查询分组好友列表
         LambdaQueryWrapper<UserFriendsGroup> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -135,6 +135,17 @@ public class UserServiceImpl implements UserService {
         resp.setFriend(friendGroups);
         resp.setGroup(groupVOS);
         return resp;
+    }
+
+    private Mine getMine(Long userId) {
+        Mine mine = new Mine();
+        User user = userMapper.selectById(userId);
+        mine.setId(String.valueOf(userId));
+        mine.setUsername(user.getNickname());
+        mine.setStatus((String) redisClient.get(userId.toString()));
+        mine.setAvatar(user.getAvatarAddress());
+        mine.setSign(user.getSign());
+        return mine;
     }
 
     private GroupVO transformGroupVO(Group group) {
@@ -316,19 +327,92 @@ public class UserServiceImpl implements UserService {
         if ("online".equals(status)) {
             // 发送ws消息给好友
             Channel channel = WsServer.CLIENT_MAP.get(req.getFriend());
-//            channel.writeAndFlush();
+            if (channel == null) {
+                insertOfflineMessage(req);
+                return;
+            }
+            AddFriendMessage message = new AddFriendMessage();
+            message.setAvatar(getMine(req.getFriend()).getAvatar());
+            message.setGroupid(req.getFriendgroup());
+            message.setType("friend");
+            channel.writeAndFlush(new TextWebSocketFrame(message.toString()));
         } else {
             // 将离线消息存入到mysql中
-            Message message = new Message();
-            message.setType(1);
-            message.setForm(req.getMineId());
-            message.setTo(req.getFriend());
-            message.setFriendGroupid(req.getFriendgroup());
-            message.setRemark(req.getRemark());
-            message.setStatus(1);
-            message.setSendTime(LocalDateTime.now());
-
-            imMessageMapper.insert(message);
+            insertOfflineMessage(req);
         }
+    }
+
+    /**
+     * 将离线消息存入mysql
+     * @param req
+     */
+    private void insertOfflineMessage(AddFriendReq req) {
+        MessageBox message = new MessageBox();
+        message.setType(1);
+        message.setForm(req.getMineId());
+        message.setTo(req.getFriend());
+        message.setFriendGroupId(req.getFriendgroup());
+        message.setRemark(req.getRemark());
+        message.setStatus(1);
+        message.setSendTime(LocalDateTime.now());
+
+        messageBoxMapper.insert(message);
+    }
+
+    /**
+     * 添加好友分组
+     * @param req
+     */
+    @Override
+    public void addFriendGroup(AddFriendGroupReq req) {
+        UserFriendsGroup friendsGroup = new UserFriendsGroup();
+        friendsGroup.setUserId(req.getUserId());
+        friendsGroup.setName(req.getFriendGroupName());
+        userFriendsGroupMapper.insert(friendsGroup);
+    }
+
+    /**
+     * 好友分组是否存在
+     * @param userId
+     * @param name
+     * @return
+     */
+    @Override
+    public boolean friendGroupExists(Long userId, String name) {
+        LambdaQueryWrapper<UserFriendsGroup> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserFriendsGroup::getUserId, userId)
+                .eq(UserFriendsGroup::getName, name);
+        Integer count = userFriendsGroupMapper.selectCount(queryWrapper);
+        return count > 0;
+    }
+
+    /**
+     * 获取消息盒子消息
+     * @param req
+     * @return
+     */
+    @Override
+    public List<MsgBoxResp> getMessageBox(MsgBoxReq req) {
+        LambdaQueryWrapper<MessageBox> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(MessageBox::getTo, req.getUserId());
+        Page<MessageBox> page = new Page<>();
+        page.setCurrent(req.getPage());
+        Page<MessageBox> messageBoxPage = messageBoxMapper.selectPage(page, lambdaQueryWrapper);
+
+        return messageBoxPage.getRecords().stream()
+                .map(this::transformMessageBox)
+                .collect(Collectors.toList());
+    }
+
+    private MsgBoxResp transformMessageBox(MessageBox box) {
+        MsgBoxResp resp = new MsgBoxResp();
+        resp.setFrom(box.getForm());
+        resp.setFriendGroupId(box.getFriendGroupId().toString());
+        resp.setTime(box.getSendTime().format(DateTimeFormatter.BASIC_ISO_DATE));
+        resp.setContent(box.getContent());
+
+        Mine mine = getMine(box.getTo());
+        resp.setUser(mine);
+        return resp;
     }
 }

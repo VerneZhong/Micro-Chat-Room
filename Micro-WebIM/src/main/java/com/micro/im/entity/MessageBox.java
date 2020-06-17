@@ -3,6 +3,7 @@ package com.micro.im.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
@@ -18,7 +19,8 @@ import java.time.LocalDateTime;
  * @since 2020-06-15
  */
 @Data
-public class Message extends Model<Message> {
+@TableName("message")
+public class MessageBox extends Model<MessageBox> {
 
     private static final long serialVersionUID = 1L;
 
@@ -41,6 +43,7 @@ public class Message extends Model<Message> {
     /**
      * 消息接收者（0位全体用户）
      */
+    @TableField("`to`")
     private Long to;
 
     /**
@@ -79,7 +82,12 @@ public class Message extends Model<Message> {
     /**
      * 好友分组
      */
-    private Long friendGroupid;
+    private Long friendGroupId;
+
+    /**
+     * 消息内容
+     */
+    private String content;
 
     @Override
     protected Serializable pkVal() {
@@ -99,7 +107,8 @@ public class Message extends Model<Message> {
         ", readTime=" + readTime +
         ", adminGroup=" + adminGroup +
         ", handler=" + handler +
-        ", friendGroupid=" + friendGroupid +
+        ", friendGroupId=" + friendGroupId +
+        ", content=" + content +
         "}";
     }
 }

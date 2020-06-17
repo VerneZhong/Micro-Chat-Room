@@ -1,11 +1,15 @@
 package com.micro.im.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
+import com.micro.common.code.BusinessCode;
 import com.micro.common.constant.FileType;
 import com.micro.common.dto.UserDTO;
+import com.micro.common.response.ResultPageVO;
 import com.micro.common.response.ResultVO;
 import com.micro.common.util.TokenUtil;
 import com.micro.im.configuration.RedisClient;
+import com.micro.im.entity.MessageBox;
 import com.micro.im.entity.User;
 import com.micro.im.req.*;
 import com.micro.im.resp.*;
@@ -273,16 +277,6 @@ public class UserController {
     }
 
     /**
-     * 拒绝好友添加
-     *
-     * @return
-     */
-    @PostMapping("/refuseFriend.do")
-    public ResultVO refuseFriend() {
-        return success();
-    }
-
-    /**
      * 根据昵称或账号查找好友总数
      *
      * @return
@@ -324,8 +318,13 @@ public class UserController {
      * @return
      */
     @PostMapping("/addFriendGroup.do")
-    public ResultVO addFriendGroup() {
-
+    public ResultVO addFriendGroup(@RequestBody AddFriendGroupReq req) {
+        log.info("添加好友分组请求req: {}", req);
+        boolean groupExists = userService.friendGroupExists(req.getUserId(), req.getFriendGroupName());
+        if (groupExists) {
+            return fail(FRIEND_GROUP_EXISTS);
+        }
+        userService.addFriendGroup(req);
         return success();
     }
 
@@ -353,6 +352,16 @@ public class UserController {
     }
 
     /**
+     * 拒绝好友添加
+     *
+     * @return
+     */
+    @PostMapping("/refuseFriend.do")
+    public ResultVO refuseFriend() {
+        return success();
+    }
+
+    /**
      * 添加群聊
      *
      * @param
@@ -367,9 +376,11 @@ public class UserController {
      *
      * @param
      */
-    @PostMapping("/getMsg.do")
-    public ResultVO getMsg() {
-        return success();
+    @PostMapping("/getMsgBox.do")
+    public ResultPageVO getMsgBox(@RequestBody MsgBoxReq req) {
+        log.info("获取消息盒子信息req: {}", req);
+        List<MsgBoxResp> messageBox = userService.getMessageBox(req);
+        return ResultPageVO.success(messageBox, messageBox.size());
     }
 
 

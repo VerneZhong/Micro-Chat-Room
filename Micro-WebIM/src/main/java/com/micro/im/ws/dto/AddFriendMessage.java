@@ -26,7 +26,7 @@ public class AddFriendMessage {
     /**
      * 好友分组ID
      */
-    private Integer groupid;
+    private Long groupid;
     /**
      * 好友ID
      */

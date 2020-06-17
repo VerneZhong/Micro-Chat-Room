@@ -17,7 +17,8 @@ public enum BusinessCode {
     NO_LOGIN(103, "没有登录"),
     EMAIL_REQUIRED(104, "邮件地址无效"),
     SEND_VERIFY_CODE_FAILED(105, "发送验证码失败"),
-    VERIFY_CODE_INVALID(106, "无效的验证码");
+    VERIFY_CODE_INVALID(106, "无效的验证码"),
+    FRIEND_GROUP_EXISTS(107, "好友分组已存在");
 
     private Integer code;
     private String message;
