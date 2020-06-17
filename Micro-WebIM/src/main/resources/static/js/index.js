@@ -47,6 +47,21 @@ layui.use(['layim', 'jquery'], function (layim) {
     layim.on('ready', function (options) {
         // 存储用户数据到本地
         window.localStorage.setItem("mine", JSON.stringify(options));
+        // 查看消息盒子离线消息
+        $.ajax({
+            type: "get",
+            headers: {      //请求头
+                Accept: "application/json; charset=utf-8",
+                token: token  //这是获取的token
+            },
+            url: "getMsgBoxCount.do?uid=" + options.mine.id,
+            contentType: "application/json",
+            success: function (res) {
+                if (res.code === 0) {
+                    layim.msgbox(res.data);
+                }
+            }
+        });
     });
 
     // 连接成功时触发

@@ -31,7 +31,14 @@ public class MessageBox extends Model<MessageBox> {
     private Long id;
 
     /**
-     * 消息类型（1为请求添加用户消息）；2为系统消息（添加好友）；3为请求加群消息；4为系统消息（添加群系统消息）；5为全体用户消息
+     * 消息类型：
+     * 1为请求添加用户消息；
+     * 2为系统消息（同意添加好友）；
+     * 3为系统消息（拒绝添加好友）；
+     * 4为请求加群消息；
+     * 5为系统消息（同意添加群系统消息）；
+     * 6为系统消息（拒绝添加群系统消息）；
+     * 7为全体用户消息（公告等）
      */
     private Integer type;
 
@@ -52,7 +59,7 @@ public class MessageBox extends Model<MessageBox> {
     private Integer status;
 
     /**
-     * 附加消息
+     * 备注消息
      */
     private String remark;
 
@@ -84,11 +91,6 @@ public class MessageBox extends Model<MessageBox> {
      */
     private Long friendGroupId;
 
-    /**
-     * 消息内容
-     */
-    private String content;
-
     @Override
     protected Serializable pkVal() {
         return null;
@@ -108,7 +110,6 @@ public class MessageBox extends Model<MessageBox> {
         ", adminGroup=" + adminGroup +
         ", handler=" + handler +
         ", friendGroupId=" + friendGroupId +
-        ", content=" + content +
         "}";
     }
 }

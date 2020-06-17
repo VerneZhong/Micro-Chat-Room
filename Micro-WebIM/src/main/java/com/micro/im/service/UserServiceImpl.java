@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.micro.common.constant.MessageType;
 import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.*;
@@ -349,7 +350,7 @@ public class UserServiceImpl implements UserService {
     private void insertOfflineMessage(AddFriendReq req) {
         MessageBox message = new MessageBox();
         message.setType(1);
-        message.setForm(req.getMineId());
+        message.setForm(req.getUid());
         message.setTo(req.getFriend());
         message.setFriendGroupId(req.getFriendgroup());
         message.setRemark(req.getRemark());
@@ -404,14 +405,27 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 获取消息盒子消息数量
+     * @param userId
+     * @return
+     */
+    @Override
+    public Integer getMessageBoxCount(Long userId) {
+        LambdaQueryWrapper<MessageBox> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(MessageBox::getTo, userId);
+        return messageBoxMapper.selectCount(lambdaQueryWrapper);
+    }
+
     private MsgBoxResp transformMessageBox(MessageBox box) {
         MsgBoxResp resp = new MsgBoxResp();
         resp.setFrom(box.getForm());
         resp.setFriendGroupId(box.getFriendGroupId().toString());
-        resp.setTime(box.getSendTime().format(DateTimeFormatter.BASIC_ISO_DATE));
-        resp.setContent(box.getContent());
+        resp.setTime(box.getSendTime().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        resp.setContent(MessageType.getMessage(box.getType()));
+        resp.setRemark(box.getRemark());
 
-        Mine mine = getMine(box.getTo());
+        Mine mine = getMine(box.getForm());
         resp.setUser(mine);
         return resp;
     }

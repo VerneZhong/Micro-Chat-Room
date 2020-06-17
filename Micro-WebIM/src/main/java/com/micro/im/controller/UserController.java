@@ -345,8 +345,8 @@ public class UserController {
      *
      * @param
      */
-    @PostMapping("/addFriend.do")
-    public ResultVO addFriend(@RequestBody AddFriendReq req) {
+    @PostMapping("/confirmAddFriend.do")
+    public ResultVO confirmAddFriend(@RequestBody ConfirmAddFriendReq req) {
         log.info("确认添加好友申请req：{}", req);
         return success();
     }
@@ -383,5 +383,9 @@ public class UserController {
         return ResultPageVO.success(messageBox, messageBox.size());
     }
 
-
+    @GetMapping("getMsgBoxCount.do")
+    public ResultVO<Integer> getMsgBoxCount(@RequestParam Long uid) {
+        Integer boxCount = userService.getMessageBoxCount(uid);
+        return success(boxCount);
+    }
 }

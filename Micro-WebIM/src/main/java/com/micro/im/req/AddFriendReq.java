@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 public class AddFriendReq {
-    private Long mineId;
+    private Long uid;
     private Long friend;
     private String remark;
     private Long friendgroup;

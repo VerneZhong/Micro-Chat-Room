@@ -23,7 +23,7 @@
       </p>
       <p class="layim-msgbox-content">
         {{ item.content }} 
-        <span>{{ item.remark ? '附言: '+item.remark : '' }}</span>
+        <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
       </p>
       <p class="layim-msgbox-btn">
         <button class="layui-btn layui-btn-small" data-type="agree">同意</button>
@@ -59,7 +59,7 @@
                     userId: mine.mine.id
                 }),
                 url: "getMsgBox.do",
-                dataType : 'JSON',
+                dataType: 'JSON',
                 contentType: "application/json",
                 success: function (res) {
                     if (res.code !== 0) {
@@ -105,7 +105,6 @@
                     , uid = li.data('uid')
                     , from_group = li.data('fromGroup')
                     , user = cache[uid];
-
                 //选择分组
                 layim.setFriendGroup({
                     type: 'friend'
@@ -113,43 +112,33 @@
                     , avatar: user.avatar
                     , group: mine.friend //获取好友分组数据
                     , submit: function (group, index) {
-
-                        //将好友追加到主面板
-                        layim.addList({
-                            type: 'friend'
-                            , avatar: user.avatar //好友头像
-                            , username: user.username //好友昵称
-                            , groupid: group //所在的分组id
-                            , id: uid //好友ID
-                            , sign: user.sign //好友签名
+                        $.ajax({
+                            type: "post",
+                            data: JSON.stringify({
+                                uid: uid //对方用户ID
+                                , fromGroup: from_group // 对方设定的好友分组
+                                , group: group // 我设定的好友分组
+                            }),
+                            url: "confirmAddFriend.do",
+                            dataType: 'JSON',
+                            contentType: "application/json",
+                            success: function (res) {
+                                if (res.code !== 0) {
+                                    return layer.msg(res.msg);
+                                }
+                                //将好友追加到主面板
+                                layim.addList({
+                                    type: 'friend'
+                                    , avatar: user.avatar //好友头像
+                                    , username: user.username //好友昵称
+                                    , groupid: group //所在的分组id
+                                    , id: uid //好友ID
+                                    , sign: user.sign //好友签名
+                                });
+                                layer.close(index);
+                                othis.parent().html('已同意');
+                            }
                         });
-                        othis.parent().html('已同意');
-
-
-                        //实际部署时，请开启下述注释，并改成你的接口地址
-                        /*
-                        $.post('/im/agreeFriend', {
-                          uid: uid //对方用户ID
-                          ,from_group: from_group //对方设定的好友分组
-                          ,group: group //我设定的好友分组
-                        }, function(res){
-                          if(res.code != 0){
-                            return layer.msg(res.msg);
-                          }
-
-                          //将好友追加到主面板
-                          parent.layui.layim.addList({
-                            type: 'friend'
-                            ,avatar: user.avatar //好友头像
-                            ,username: user.username //好友昵称
-                            ,groupid: group //所在的分组id
-                            ,id: uid //好友ID
-                            ,sign: user.sign //好友签名
-                          });
-                          parent.layer.close(index);
-                          othis.parent().html('已同意');
-                        });
-                        */
                     }
                 });
             }

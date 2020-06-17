@@ -102,4 +102,11 @@ public interface UserService {
      * @return
      */
     List<MsgBoxResp> getMessageBox(MsgBoxReq req);
+
+    /**
+     * 获取消息盒子消息数量
+     * @param userId
+     * @return
+     */
+    Integer getMessageBoxCount(Long userId);
 }
