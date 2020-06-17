@@ -4,13 +4,10 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.jdbc.Driver
-#    url: jdbc:mysql://localhost:3306/micro_chat_room?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT-8
-    url: jdbc:mysql://rm-m5emo7v0z5n53h094oo.mysql.rds.aliyuncs.com:3306/micro_chat_room?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT-8
-#    username: root
-    username: micro_chat_room
-#    password: '@Wwindows8'
+    url: jdbc:mysql://localhost:3306/micro_chat_room?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT-8
+    username: root
+    password: '@Wwindows8'
 #    password: 'zxbqq'
-    password: 'ms0Q82ikiD67sH^x'
     hikari:
       minimum-idle: 5
       maximum-pool-size: 10
@@ -21,10 +18,7 @@ spring:
       connection-timeout: 30000
       connection-test-query: SELECT 1
   redis:
-#    host: 127.0.0.1
-    host: r-2zebp875fjwi9222f7pd.redis.rds.aliyuncs.com
-    password: MeterDance^2020
-    database: 20
+    host: 127.0.0.1
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
@@ -53,14 +47,12 @@ cache:
 mail:
   smtp:
     #服务器主机名
-#    host: smtp.qq.com
-    host: smtp.office365.com
+    host: smtp.gmail.com
     #你的邮箱地址
-#    username: 171980062@qq.com
-    username: MicroWebIM@hotmail.com
+    username: thersayibui822@gmail.com
     #授权码
-#    password: nvgzpmqoxcwjbjgf
-    password: suxyonkgplruihlf
+    port: 587
+    password: cbfbvobwzhnveokg
     #编码格式
     defaultEncoding: utf-8
     #是否进行用户名密码校验

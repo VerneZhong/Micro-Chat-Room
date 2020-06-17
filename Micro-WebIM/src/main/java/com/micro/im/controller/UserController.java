@@ -93,7 +93,7 @@ public class UserController {
     public ResultVO sendVerifyCode(@RequestBody VerifyCodeReq req) {
         log.info("发送邮件验证码：{}", req);
         String code = TokenUtil.randomCode("0123456789", 6);
-        String message = "验证码：" + code;
+        String message = "注册帐号验证码：" + code;
         boolean result;
         if (StringUtils.isNoneBlank(req.getEmail())) {
             result = messageService.sendEmailMessage(req.getEmail(), message);

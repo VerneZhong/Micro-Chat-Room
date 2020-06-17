@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
 import java.util.Properties;
 
 /**
@@ -26,6 +28,8 @@ public class MailConfiguration {
     private String auth;
     @Value("${mail.smtp.timeout}")
     private String timeout;
+    @Value("${mail.smtp.port}")
+    private Integer port;
 
     @Bean
     public JavaMailSender javaMailSender() {
@@ -33,13 +37,21 @@ public class MailConfiguration {
         mailSender.setHost(host);
         mailSender.setUsername(username);
         mailSender.setPassword(password);
-        mailSender.setPort(587);
+        mailSender.setPort(port);
         mailSender.setDefaultEncoding(encoding);
         Properties properties = new Properties();
         properties.put("mail.smtp.auth", auth);
         properties.put("mail.smtp.timeout", timeout);
-        properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
+
+        Session session = Session.getInstance(properties,
+                new javax.mail.Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(username, password);
+                    }
+                });
+        mailSender.setSession(session);
         mailSender.setJavaMailProperties(properties);
         return mailSender;
     }

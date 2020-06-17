@@ -36,6 +36,6 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public boolean sendEmailMessage(String email, String message) {
         log.info("Message-Service send email: {} message: {}", email, message);
-        return emailComponent.sendMail(message, "Micro-WebIM聊天室的邮件", email, javaMailSender, false);
+        return emailComponent.sendMail(message, "Micro-WebIM团队邮件", email, javaMailSender, false);
     }
 }
