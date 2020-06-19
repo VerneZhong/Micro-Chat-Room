@@ -109,4 +109,5 @@ public interface UserService {
      * @return
      */
     Integer getMessageBoxCount(Long userId);
+
 }

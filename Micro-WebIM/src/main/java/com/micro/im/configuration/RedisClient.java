@@ -30,6 +30,10 @@ public class RedisClient {
         redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.SECONDS);
     }
 
+    public void remove(String key) {
+        redisTemplate.opsForSet().remove(key);
+    }
+
     public void expire(String key, int timeout) {
         redisTemplate.expire(key, timeout, TimeUnit.SECONDS);
     }

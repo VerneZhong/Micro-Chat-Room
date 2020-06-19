@@ -50,14 +50,14 @@ layui.use(['layim', 'jquery'], function (layim) {
         // 查看消息盒子离线消息
         $.ajax({
             type: "get",
-            headers: {      //请求头
+            headers: {
                 Accept: "application/json; charset=utf-8",
-                token: token  //这是获取的token
+                token: token
             },
             url: "getMsgBoxCount.do?uid=" + options.mine.id,
             contentType: "application/json",
             success: function (res) {
-                if (res.code === 0) {
+                if (res.code === 0 && res.data > 0) {
                     layim.msgbox(res.data);
                 }
             }
@@ -99,7 +99,6 @@ layui.use(['layim', 'jquery'], function (layim) {
             url: "modifyStatus.do?status=" + status,
             contentType: "application/json",
             success: function (data) {
-
             }
         });
     });
@@ -116,7 +115,6 @@ layui.use(['layim', 'jquery'], function (layim) {
             data: JSON.stringify({sign: sign}),
             contentType: "application/json",
             success: function (data) {
-
             }
         });
     });
@@ -139,14 +137,14 @@ layui.use(['layim', 'jquery'], function (layim) {
     socket.onmessage = function (res) {
         console.log(res);
         // 事件名称
-        var emit = res.emit;
+        // var emit = res.emit;
         var data = res.data;
-        console.log(emit);
+        // console.log(emit);
         console.log(data);
         layim.getMessage(JSON.parse(data));
-        if (emit === 'chatMessage') {
-
-        }
+        // if (emit === 'chatMessage') {
+        //
+        // }
     };
 
     // 监听查看群成员
@@ -159,20 +157,19 @@ layui.use(['layim', 'jquery'], function (layim) {
     layim.on('chatChange', function (res) {
         // 更新当前会话状态，用于显示对方输入状态、在线离线状态等
         var type = res.data.type;
-        // 模拟数据
+        console.log(res);
         // 私聊
         if (type === 'friend') {
             layim.setChatStatus('<span style="color:#FF5722;">在线</span>')
         } else {
-            layim.getMessage({
-                system: true //系统消息
-                , id: 111111111
-                , type: "group"
-                , content: '加入群聊'
-            });
+            // layim.getMessage({
+            //     system: true //系统消息
+            //     , id: 111111111
+            //     , type: "group"
+            //     , content: '加入群聊'
+            // });
         }
     });
-
 
     // 弹出添加好友面板
     // layim.add({
@@ -204,5 +201,50 @@ layui.use(['layim', 'jquery'], function (layim) {
 
     // 添加好友/群到主面板
 
+});
+
+$(function () {
+
+    // window.onbeforeunload = function (e) {
+    //     e = e || window.event;
+    //     // 兼容IE8和Firefox 4之前的版本
+    //     if (e) {
+    //         e.returnValue = '确定离开聊天室吗？';
+    //     }
+    //     // Chrome, Safari, Firefox 4+, Opera 12+ , IE 9+
+    //     return '确定离开聊天室吗';
+    // }
+
+    window.onubload = function (e) {
+        layer.open({
+            content: '确定离开聊天室吗？',
+            yes: function (index, layero) {
+                //do something
+                layer.close(index); //如果设定了yes回调，需进行手工关闭
+            },
+            cancel: function (index, layero) {
+                if (confirm('确定离开聊天室吗？')) { //只有当点击confirm框的确定时，该层才会关闭
+                    layer.close(index)
+                    $.ajax({
+                        type: "get",
+                        headers: {      //请求头
+                            Accept: "application/json; charset=utf-8",
+                            token: token
+                        },
+                        url: "logout.do",
+                        contentType: "application/json",
+                        success: function (res) {
+                            // clean cookie or db
+                            if (res.code === 0) {
+                                window.localStorage.removeItem("mine");
+                                $.cookie('token', null);
+                            }
+                        }
+                    });
+                }
+                return false;
+            }
+        });
+    }
 });
 

@@ -1,5 +1,6 @@
 package com.micro.im.ws.handler;
 
+import com.micro.common.constant.ServerConstant;
 import com.micro.common.dto.ChatMessage;
 import com.micro.common.util.JsonUtil;
 import com.micro.im.ws.provider.UserServerProvider;
@@ -21,6 +22,7 @@ import org.apache.thrift.transport.TTransportException;
 
 import java.util.Map;
 
+import static com.micro.common.constant.ServerConstant.OFFLINE;
 import static com.micro.im.ws.WsServer.CLIENT_MAP;
 
 /**
@@ -119,7 +121,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
             // 将用户置为离线状态
             log.info("set user online status: {}", removeId);
             UserThriftService.Client userService = UserServerProvider.getUserService();
-            userService.setUserOffline(removeId, "offline");
+            userService.setUserOffline(removeId, OFFLINE);
         }
     }
 

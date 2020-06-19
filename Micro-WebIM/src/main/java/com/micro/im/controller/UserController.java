@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.micro.common.code.BusinessCode;
 import com.micro.common.constant.FileType;
+import com.micro.common.constant.ServerConstant;
 import com.micro.common.dto.UserDTO;
 import com.micro.common.response.ResultPageVO;
 import com.micro.common.response.ResultVO;
@@ -29,6 +30,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.micro.common.code.BusinessCode.*;
+import static com.micro.common.constant.ServerConstant.OFFLINE;
+import static com.micro.common.constant.ServerConstant.ONLINE;
 import static com.micro.common.response.ResultVO.fail;
 import static com.micro.common.response.ResultVO.success;
 
@@ -166,7 +169,7 @@ public class UserController {
             String token = TokenUtil.getToken();
             // 缓存用户到Redis
             redisClient.set(token, userDTO, 3600);
-            redisClient.set(user.getId().toString(), "online");
+            redisClient.set(user.getId().toString(), ONLINE);
             return success(token);
         }
         return fail(USER_INVALID);
@@ -177,9 +180,15 @@ public class UserController {
      *
      * @return
      */
-    @GetMapping("/logout")
-    public ResultVO logout() {
-
+    @GetMapping("/logout.do")
+    public ResultVO logout(HttpServletRequest request) {
+        String token = request.getHeader("token");
+        log.info("用户退出登录：{}", token);
+        if (StringUtils.isNotBlank(token)) {
+            redisClient.remove(token);
+            Long userId = getUserDto(token).getId();
+            redisClient.set(userId.toString(), OFFLINE);
+        }
         return success();
     }
 
@@ -383,9 +392,27 @@ public class UserController {
         return ResultPageVO.success(messageBox, messageBox.size());
     }
 
+    /**
+     * 查看离线消息数量
+     * @param uid
+     * @return
+     */
     @GetMapping("getMsgBoxCount.do")
     public ResultVO<Integer> getMsgBoxCount(@RequestParam Long uid) {
         Integer boxCount = userService.getMessageBoxCount(uid);
         return success(boxCount);
     }
+
+    /**
+     * 查看离线消息数量
+     * @param uid
+     * @return
+     */
+    @GetMapping("setMessageRead.do")
+    public ResultVO setMessageRead(@RequestParam Long uid) {
+        Integer boxCount = userService.getMessageBoxCount(uid);
+        return success(boxCount);
+    }
+
+
 }

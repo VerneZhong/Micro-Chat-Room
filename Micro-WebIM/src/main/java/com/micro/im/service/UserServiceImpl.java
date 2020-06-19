@@ -414,6 +414,7 @@ public class UserServiceImpl implements UserService {
     public Integer getMessageBoxCount(Long userId) {
         LambdaQueryWrapper<MessageBox> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(MessageBox::getTo, userId);
+        lambdaQueryWrapper.eq(MessageBox::getStatus, 1);
         return messageBoxMapper.selectCount(lambdaQueryWrapper);
     }
 

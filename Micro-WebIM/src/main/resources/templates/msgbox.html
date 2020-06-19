@@ -91,11 +91,12 @@
         });
 
         //打开页面即把消息标记为已读
-        /*
-        $.post('/message/read', {
-          type: 1
+        $.ajax({
+            type: "get",
+            url: "setMessageRead.do?uid=" + mine.mine.id,
+            dataType: 'JSON',
+            contentType: "application/json"
         });
-        */
 
         //操作
         var active = {
@@ -127,16 +128,16 @@
                                     return layer.msg(res.msg);
                                 }
                                 //将好友追加到主面板
-                                layim.addList({
-                                    type: 'friend'
-                                    , avatar: user.avatar //好友头像
-                                    , username: user.username //好友昵称
-                                    , groupid: group //所在的分组id
-                                    , id: uid //好友ID
-                                    , sign: user.sign //好友签名
-                                });
-                                layer.close(index);
-                                othis.parent().html('已同意');
+                                // layim.addList({
+                                //     type: 'friend'
+                                //     , avatar: user.avatar //好友头像
+                                //     , username: user.username //好友昵称
+                                //     , groupid: group //所在的分组id
+                                //     , id: uid //好友ID
+                                //     , sign: user.sign //好友签名
+                                // });
+                                // layer.close(index);
+                                // othis.parent().html('已同意');
                             }
                         });
                     }

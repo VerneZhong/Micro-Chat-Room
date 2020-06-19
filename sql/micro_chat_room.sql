@@ -108,8 +108,7 @@ CREATE TABLE `message` (
 
 -- update table field
 ALTER TABLE `message`
-    CHANGE COLUMN `friend_groupid` `friend_group_id`  bigint(20) NULL DEFAULT NULL COMMENT '好友分组' AFTER `handler`,
-    ADD COLUMN `content`  varchar(512) NOT NULL AFTER `friend_group_id`;
+    CHANGE COLUMN `friend_groupid` `friend_group_id`  bigint(20) NULL DEFAULT NULL COMMENT '好友分组' AFTER `handler`;
 
 ALTER TABLE `message`
     MODIFY COLUMN `type`  tinyint(1) NOT NULL COMMENT '消息类型：\r\n1为请求添加用户消息；\r\n2为系统消息（同意添加好友）；\r\n3为系统消息（拒绝添加好友）；\r\n4为请求加群消息；\r\n5为系统消息（同意添加群系统消息）；\r\n6为系统消息（拒绝添加群系统消息）；\r\n7为全体用户消息（公告等）' AFTER `id`;

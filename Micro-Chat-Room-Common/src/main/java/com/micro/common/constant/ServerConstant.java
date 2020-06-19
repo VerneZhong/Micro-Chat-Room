@@ -44,4 +44,8 @@ public final class ServerConstant {
     public static final String UPLOAD_VIDEO_PATH = "/upload/video/";
 
     public static final String UPLOAD_FILE_PATH = "/upload/file/";
+
+    public static final String ONLINE = "online";
+
+    public static final String OFFLINE = "offline";
 }
