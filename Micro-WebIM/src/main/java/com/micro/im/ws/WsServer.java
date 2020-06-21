@@ -1,5 +1,6 @@
 package com.micro.im.ws;
 
+import com.google.common.collect.Maps;
 import com.micro.im.ws.handler.WebSocketServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -13,14 +14,16 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.extern.slf4j.Slf4j;
 
+
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.micro.common.constant.ServerConstant.*;
 
@@ -44,10 +47,12 @@ public class WsServer {
      */
     private final ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
+    public static final Map<Long, Channel> CLIENT_MAP = Maps.newConcurrentMap();
+
     /**
-     * 记录 chanel - userId 关联关系
+     * 绑定 channel --> userId 之间参数
      */
-    public final static Map<Long, Channel> CLIENT_MAP = new ConcurrentHashMap<>();
+    public static final AttributeKey<Long> USER_ID_KEY = AttributeKey.valueOf("userId");
 
     private WsServer() throws Exception {
         if (Epoll.isAvailable()) {
@@ -96,7 +101,8 @@ public class WsServer {
                             pipeline.addLast(new ChunkedWriteHandler());
 
                             // 处理 WebSocket 请求
-                            pipeline.addLast(new WebSocketServerProtocolHandler("/im"));
+                            pipeline.addLast(new WebSocketServerCompressionHandler());
+                            pipeline.addLast(new WebSocketServerProtocolHandler("/im", null, true));
                             pipeline.addLast(new WebSocketServerHandler(channelGroup));
                         }
                     })
@@ -111,5 +117,14 @@ public class WsServer {
         log.info("服务已关闭");
         bossGroup.shutdownGracefully();
         workGroup.shutdownGracefully();
+    }
+
+    /**
+     * 获取当前 client 的 userId
+     * @param client
+     * @return
+     */
+    public static Long getUserId(Channel client) {
+        return client.attr(USER_ID_KEY).get();
     }
 }

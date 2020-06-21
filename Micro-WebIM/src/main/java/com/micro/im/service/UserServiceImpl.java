@@ -19,6 +19,7 @@ import com.micro.im.resp.MsgBoxResp;
 import com.micro.im.vo.*;
 import com.micro.im.ws.WsServer;
 import com.micro.im.ws.dto.AddFriendMessage;
+import com.micro.im.ws.upstream.BaseMessageData;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
@@ -332,11 +333,10 @@ public class UserServiceImpl implements UserService {
                 insertOfflineMessage(req);
                 return;
             }
-            AddFriendMessage message = new AddFriendMessage();
-            message.setAvatar(getMine(req.getFriend()).getAvatar());
-            message.setGroupid(req.getFriendgroup());
-            message.setType("friend");
-            channel.writeAndFlush(new TextWebSocketFrame(message.toString()));
+            BaseMessageData<Long> messageData = new BaseMessageData<>();
+            messageData.setType("addFriend");
+            messageData.setData(req.getFriend());
+            channel.writeAndFlush(new TextWebSocketFrame(messageData.toString()));
         } else {
             // 将离线消息存入到mysql中
             insertOfflineMessage(req);

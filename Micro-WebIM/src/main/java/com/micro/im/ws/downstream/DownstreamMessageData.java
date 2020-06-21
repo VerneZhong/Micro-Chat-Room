@@ -1,10 +1,11 @@
-package com.micro.im.ws.receive;
+package com.micro.im.ws.downstream;
 
 /**
+ * 接收客户端聊天消息
  * @author Mr.zxb
  * @date 2020-06-14 15:59:25
  */
-public class MessageData {
+public class DownstreamMessageData {
 
     private String type;
     private DataBean data;

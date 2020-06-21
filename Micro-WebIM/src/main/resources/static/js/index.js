@@ -48,13 +48,17 @@ layui.use(['layim', 'jquery'], function (layim) {
         // 存储用户数据到本地
         window.localStorage.setItem("mine", JSON.stringify(options));
         // 查看消息盒子离线消息
+        msgBox(options.mine.id);
+    });
+
+    function msgBox(uid) {
         $.ajax({
             type: "get",
             headers: {
                 Accept: "application/json; charset=utf-8",
                 token: token
             },
-            url: "getMsgBoxCount.do?uid=" + options.mine.id,
+            url: "getMsgBoxCount.do?uid=" + uid,
             contentType: "application/json",
             success: function (res) {
                 if (res.code === 0 && res.data > 0) {
@@ -62,7 +66,7 @@ layui.use(['layim', 'jquery'], function (layim) {
                 }
             }
         });
-    });
+    }
 
     // 连接成功时触发
     socket.onopen = function () {
@@ -81,11 +85,6 @@ layui.use(['layim', 'jquery'], function (layim) {
     // 关闭连接
     socket.onclose = function () {
         console.log('服务器关闭！');
-    };
-
-    // 出现错误
-    socket.onerror = function (error) {
-        console.log(error);
     };
 
     // 监听在线状态切换
@@ -128,7 +127,7 @@ layui.use(['layim', 'jquery'], function (layim) {
     layim.on('sendMessage', function (res) {
         // 发送消息到服务器
         socket.send(JSON.stringify({
-            type: 'chatMessage',
+            type: 'chat',
             data: res
         }));
     });
@@ -141,10 +140,14 @@ layui.use(['layim', 'jquery'], function (layim) {
         var data = res.data;
         // console.log(emit);
         console.log(data);
-        layim.getMessage(JSON.parse(data));
-        // if (emit === 'chatMessage') {
-        //
-        // }
+        var emit = data.type;
+        if (emit === 'chat') {
+            layim.getMessage(JSON.parse(data));
+        } else if (emit === 'system') {
+            layim.getMessage(JSON.parse(data));
+        } else if (emit === 'addFriend') {
+            msgBox(data);
+        }
     };
 
     // 监听查看群成员
@@ -204,16 +207,6 @@ layui.use(['layim', 'jquery'], function (layim) {
 });
 
 $(function () {
-
-    // window.onbeforeunload = function (e) {
-    //     e = e || window.event;
-    //     // 兼容IE8和Firefox 4之前的版本
-    //     if (e) {
-    //         e.returnValue = '确定离开聊天室吗？';
-    //     }
-    //     // Chrome, Safari, Firefox 4+, Opera 12+ , IE 9+
-    //     return '确定离开聊天室吗';
-    // }
 
     window.onubload = function (e) {
         layer.open({

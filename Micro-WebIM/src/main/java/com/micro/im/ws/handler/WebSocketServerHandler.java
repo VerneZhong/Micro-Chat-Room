@@ -1,29 +1,25 @@
 package com.micro.im.ws.handler;
 
-import com.micro.common.constant.ServerConstant;
 import com.micro.common.dto.ChatMessage;
+import com.micro.common.protocol.IMP;
 import com.micro.common.util.JsonUtil;
+import com.micro.im.ws.WsServer;
+import com.micro.im.ws.downstream.DownstreamMessageData;
 import com.micro.im.ws.provider.UserServerProvider;
-import com.micro.im.ws.receive.MessageData;
+import com.micro.im.ws.upstream.BaseMessageData;
 import com.micro.thrift.user.UserThriftService;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.thrift.TServiceClient;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 
 import java.util.Map;
 
 import static com.micro.common.constant.ServerConstant.OFFLINE;
-import static com.micro.im.ws.WsServer.CLIENT_MAP;
+import static com.micro.im.ws.WsServer.*;
 
 /**
  * ws handler
@@ -44,6 +40,15 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     }
 
     @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+            // 握手成功
+
+        }
+        super.userEventTriggered(ctx, evt);
+    }
+
+    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // 和服务器建立连接
         channelGroup.add(ctx.channel());
@@ -59,12 +64,10 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                 case "login":
                     // 发送上线消息
                     String uid = JsonUtil.getRootValueByKey(text, "uid");
-                    if (uid != null) {
-                        CLIENT_MAP.put(Long.parseLong(uid), ctx.channel());
-                    }
+                   ctx.channel().attr(USER_ID_KEY).getAndSet(Long.parseLong(uid));
                     break;
                 case "chatMessage":
-                    sendChatMessage(text);
+                    sendChatMessage(text, ctx.channel());
                     break;
                 case "system":
 
@@ -84,12 +87,15 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     /**
      * 转发消息给其他客户端
      * @param text
+     * @param client
      */
-    private void sendChatMessage(String text) {
-        MessageData messageData = JsonUtil.fromJson(text, MessageData.class);
-        MessageData.DataBean data = messageData.getData();
+    private void sendChatMessage(String text, Channel client) {
+        DownstreamMessageData messageData = JsonUtil.fromJson(text, DownstreamMessageData.class);
+        DownstreamMessageData.DataBean data = messageData.getData();
+        DownstreamMessageData.DataBean.MineBean mine = data.getMine();
+
+        // 发送给客户端消息
         ChatMessage chatMessage = new ChatMessage();
-        MessageData.DataBean.MineBean mine = data.getMine();
         chatMessage.setUsername(mine.getUsername());
         chatMessage.setAvatar(mine.getAvatar());
         chatMessage.setId(mine.getId());
@@ -99,8 +105,11 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
         chatMessage.setFromid(mine.getId());
         chatMessage.setTimestamp(System.currentTimeMillis());
 
+        BaseMessageData<ChatMessage> baseMessageData = new BaseMessageData<>();
+        baseMessageData.setData(chatMessage);
+        baseMessageData.setType(IMP.CHAT.getName());
         Channel toChannel = CLIENT_MAP.get(Long.parseLong(data.getTo().getId()));
-        channelGroup.writeAndFlush(new TextWebSocketFrame(chatMessage.toString()),
+        channelGroup.writeAndFlush(new TextWebSocketFrame(baseMessageData.toString()),
                 channel -> channel == toChannel);
     }
 
@@ -109,13 +118,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
         // 断开连接发送消息
         log.info("客户端断开连接：{}", ctx.channel().id().asLongText());
         channelGroup.remove(ctx.channel());
-        Long removeId = null;
-        for (Map.Entry<Long, Channel> channelEntry : CLIENT_MAP.entrySet()) {
-            if (channelEntry.getValue() == ctx.channel()) {
-                removeId = channelEntry.getKey();
-                break;
-            }
-        }
+        Long removeId = getUserId(ctx.channel());
         if (removeId != null) {
             CLIENT_MAP.remove(removeId);
             // 将用户置为离线状态
