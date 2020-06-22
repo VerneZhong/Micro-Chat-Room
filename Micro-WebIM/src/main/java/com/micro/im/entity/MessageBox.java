@@ -54,7 +54,7 @@ public class MessageBox extends Model<MessageBox> {
     private Long to;
 
     /**
-     * 1未读，2同意，3拒绝，4同意且返回消息已读，5拒绝且返回消息已读，6全体消息已读
+     * 1未读，2同意，3拒绝，4同意且返回消息已读，5拒绝且返回消息已读，6全体消息已读，7已读
      */
     private Integer status;
 

@@ -3,10 +3,7 @@ package com.micro.im.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.micro.im.entity.MessageBox;
 import com.micro.im.entity.User;
-import com.micro.im.req.AddFriendGroupReq;
-import com.micro.im.req.AddFriendReq;
-import com.micro.im.req.MsgBoxReq;
-import com.micro.im.req.UserRegisterReq;
+import com.micro.im.req.*;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
 import com.micro.im.resp.MsgBoxResp;
@@ -79,8 +76,9 @@ public interface UserService {
     /**
      * 发送添加好友请求
      * @param addFriendReq
+     * @throws Exception
      */
-    void sendAddFriendReq(AddFriendReq addFriendReq);
+    void sendAddFriendReq(AddFriendReq addFriendReq) throws Exception;
 
     /**
      * 添加好友分组
@@ -110,4 +108,15 @@ public interface UserService {
      */
     Integer getMessageBoxCount(Long userId);
 
+    /**
+     * 将消息设置为已读
+     * @param userId
+     */
+    void setMessageRead(Long userId);
+
+    /**
+     * 确认添加好友
+     * @param req
+     */
+    void confirmAddFriend(ConfirmAddFriendReq req);
 }

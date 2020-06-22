@@ -14,11 +14,13 @@
 {{# layui.each(d.data, function(index, item){
   if(item.from){ }}
     <li data-uid="{{ item.from }}" data-fromGroup="{{ item.friendGroupId }}">
-      <a href="/u/{{ item.from }}/" target="_blank">
+<!--      <a href="/u/{{ item.from }}/" target="_blank">-->
+      <a href="#" target="_blank">
         <img src="{{ item.user.avatar }}" class="layui-circle layim-msgbox-avatar">
       </a>
       <p class="layim-msgbox-user">
-        <a href="/u/{{ item.from }}/" target="_blank">{{ item.user.username||'' }}</a>
+<!--        <a href="/u/{{ item.from }}/" target="_blank">{{ item.user.username||'' }}</a>-->
+        <a href="#" target="_blank">{{ item.user.username||'' }}</a>
         <span>{{ item.time }}</span>
       </p>
       <p class="layim-msgbox-content">
@@ -69,7 +71,7 @@
                     layui.each(res.data, function (index, item) {
                         cache[item.from] = item.user;
                     });
-                    callback && callback(res.data, res.pages);
+                    callback && callback(res.data, Math.ceil(res.pages / 10));
                 }
             });
         };
@@ -104,10 +106,10 @@
             agree: function (othis) {
                 var li = othis.parents('li')
                     , uid = li.data('uid')
-                    , from_group = li.data('fromGroup')
+                    , from_group = li.data('fromgroup')
                     , user = cache[uid];
                 //选择分组
-              debugger;
+                debugger;
                 layim.setFriendGroup({
                     type: 'friend'
                     , username: user.username

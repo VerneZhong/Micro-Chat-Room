@@ -4,7 +4,14 @@
 layui.config({
     base: 'js/'
 });
+var host = 'ws://localhost:8080/im';
 let token = $.cookie("token");
+// 记录当前时间并转成时间戳
+// const now = new Date().getTime();
+// // 从缓存中获取用户上次退出的时间戳
+// const leaveTime = parseInt(localStorage.getItem('leaveTime'), 10);
+// // 判断是否为刷新，两次间隔在5s内判定为刷新操作
+// const refresh = (now - leaveTime) <= 5000;
 layui.use(['layim', 'jquery'], function (layim) {
     let $ = layui.jquery;
     //基础配置
@@ -40,8 +47,7 @@ layui.use(['layim', 'jquery'], function (layim) {
         , voice: 'default.mp3'
     });
 
-    // ws 地址
-    var socket = new WebSocket('ws://localhost:8080/im');
+    var socket = new WebSocket(host);
 
     // 获取基础信息
     layim.on('ready', function (options) {
@@ -50,6 +56,16 @@ layui.use(['layim', 'jquery'], function (layim) {
         // 查看消息盒子离线消息
         msgBox(options.mine.id);
     });
+
+    // ws open send login event
+    function login() {
+        let cache = JSON.parse(window.localStorage.getItem("mine"));
+        let uid = cache.mine.id;
+        socket.send(JSON.stringify({
+            type: "login",
+            data: uid
+        }));
+    }
 
     function msgBox(uid) {
         $.ajax({
@@ -71,20 +87,14 @@ layui.use(['layim', 'jquery'], function (layim) {
     // 连接成功时触发
     socket.onopen = function () {
         console.log('连接服务器成功！');
+        login();
     };
-
-    // Connection opened
-    socket.addEventListener('open', function (event) {
-        let cache = JSON.parse(window.localStorage.getItem("mine"));
-        socket.send(JSON.stringify({
-            type: "login",
-            uid: cache.mine.id
-        }));
-    });
 
     // 关闭连接
     socket.onclose = function () {
         console.log('服务器关闭！');
+        // 是否重连
+
     };
 
     // 监听在线状态切换
@@ -97,8 +107,7 @@ layui.use(['layim', 'jquery'], function (layim) {
             },
             url: "modifyStatus.do?status=" + status,
             contentType: "application/json",
-            success: function (data) {
-            }
+            success: function (data) {}
         });
     });
 
@@ -113,8 +122,7 @@ layui.use(['layim', 'jquery'], function (layim) {
             url: "modifySign.do",
             data: JSON.stringify({sign: sign}),
             contentType: "application/json",
-            success: function (data) {
-            }
+            success: function (data) {}
         });
     });
 
@@ -136,17 +144,15 @@ layui.use(['layim', 'jquery'], function (layim) {
     socket.onmessage = function (res) {
         console.log(res);
         // 事件名称
-        // var emit = res.emit;
-        var data = res.data;
-        // console.log(emit);
+        let data = JSON.parse(res.data);
         console.log(data);
-        var emit = data.type;
+        let emit = data.type;
         if (emit === 'chat') {
-            layim.getMessage(JSON.parse(data));
+            layim.getMessage(data.data);
         } else if (emit === 'system') {
-            layim.getMessage(JSON.parse(data));
+            layim.getMessage(data.data);
         } else if (emit === 'addFriend') {
-            msgBox(data);
+            msgBox(data.data);
         }
     };
 
@@ -202,42 +208,40 @@ layui.use(['layim', 'jquery'], function (layim) {
     //     }
     // });
 
-    // 添加好友/群到主面板
-
 });
 
 $(function () {
-
-    window.onubload = function (e) {
-        layer.open({
-            content: '确定离开聊天室吗？',
-            yes: function (index, layero) {
-                //do something
-                layer.close(index); //如果设定了yes回调，需进行手工关闭
-            },
-            cancel: function (index, layero) {
-                if (confirm('确定离开聊天室吗？')) { //只有当点击confirm框的确定时，该层才会关闭
-                    layer.close(index)
-                    $.ajax({
-                        type: "get",
-                        headers: {      //请求头
-                            Accept: "application/json; charset=utf-8",
-                            token: token
-                        },
-                        url: "logout.do",
-                        contentType: "application/json",
-                        success: function (res) {
-                            // clean cookie or db
-                            if (res.code === 0) {
-                                window.localStorage.removeItem("mine");
-                                $.cookie('token', null);
-                            }
-                        }
-                    });
-                }
-                return false;
-            }
-        });
-    }
+    // window.onunload = function (e) {
+        // 将退出时间存于localstorage中
+        // localStorage.setItem('leaveTime', new Date().getTime());
+        // layer.open({
+        //     content: '确定离开聊天室吗？',
+        //     yes: function (index, layero) {
+        //         layer.close(index);
+        //     },
+        //     cancel: function (index, layero) {
+        //         if (confirm('确定离开聊天室吗？')) { //只有当点击confirm框的确定时，该层才会关闭
+        //             layer.close(index)
+        //             $.ajax({
+        //                 type: "get",
+        //                 headers: {      //请求头
+        //                     Accept: "application/json; charset=utf-8",
+        //                     token: token
+        //                 },
+        //                 url: "logout.do",
+        //                 contentType: "application/json",
+        //                 success: function (res) {
+        //                     // clean cookie or db
+        //                     if (res.code === 0) {
+        //                         window.localStorage.removeItem("mine");
+        //                         $.cookie('token', null);
+        //                     }
+        //                 }
+        //             });
+        //         }
+        //         return false;
+        //     }
+        // });
+    // }
 });
 

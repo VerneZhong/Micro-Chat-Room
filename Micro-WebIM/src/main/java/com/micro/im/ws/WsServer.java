@@ -2,6 +2,7 @@ package com.micro.im.ws;
 
 import com.google.common.collect.Maps;
 import com.micro.im.ws.handler.WebSocketServerHandler;
+import com.micro.im.ws.upstream.BaseMessageData;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
@@ -13,6 +14,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.logging.LogLevel;
@@ -47,6 +49,9 @@ public class WsServer {
      */
     private final ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
+    /**
+     * Map: {userId, Channel}
+     */
     public static final Map<Long, Channel> CLIENT_MAP = Maps.newConcurrentMap();
 
     /**
@@ -78,6 +83,7 @@ public class WsServer {
                     .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .option(ChannelOption.SO_BACKLOG, 1024)
+                    .option(ChannelOption.SO_KEEPALIVE, true)
                     .childHandler(new ChannelInitializer<Channel>() {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
@@ -103,7 +109,7 @@ public class WsServer {
                             // 处理 WebSocket 请求
                             pipeline.addLast(new WebSocketServerCompressionHandler());
                             pipeline.addLast(new WebSocketServerProtocolHandler("/im", null, true));
-                            pipeline.addLast(new WebSocketServerHandler(channelGroup));
+                            pipeline.addLast(new WebSocketServerHandler(channelGroup, CLIENT_MAP));
                         }
                     })
                     .bind(SERVER_PORT).sync();
@@ -124,7 +130,26 @@ public class WsServer {
      * @param client
      * @return
      */
-    public static Long getUserId(Channel client) {
+    public Long getUserId(Channel client) {
         return client.attr(USER_ID_KEY).get();
+    }
+
+    /**
+     * 指定channel发送消息
+     * @param channel
+     * @param messageData
+     * @param <T>
+     */
+    public  <T> void sendMessage(Channel channel, BaseMessageData<T> messageData) {
+        channelGroup.writeAndFlush(new TextWebSocketFrame(messageData.toString()), target -> channel == target);
+    }
+
+    /**
+     * 发送消息
+     * @param messageData
+     * @param <T>
+     */
+    public  <T> void sendMessage(BaseMessageData<T> messageData) {
+        channelGroup.writeAndFlush(new TextWebSocketFrame(messageData.toString()));
     }
 }

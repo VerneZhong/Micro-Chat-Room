@@ -93,6 +93,7 @@ public class UserController {
 
     /**
      * 发送邮件验证码
+     *
      * @param req
      * @return
      */
@@ -343,7 +344,7 @@ public class UserController {
      * @param
      */
     @PostMapping("/sendAddFriendReq.do")
-    public ResultVO sendAddFriendReq(@RequestBody AddFriendReq req) {
+    public ResultVO sendAddFriendReq(@RequestBody AddFriendReq req) throws Exception {
         log.info("发送添加好友请求req：{}", req);
         userService.sendAddFriendReq(req);
         return success();
@@ -357,6 +358,7 @@ public class UserController {
     @PostMapping("/confirmAddFriend.do")
     public ResultVO confirmAddFriend(@RequestBody ConfirmAddFriendReq req) {
         log.info("确认添加好友申请req：{}", req);
+        userService.confirmAddFriend(req);
         return success();
     }
 
@@ -381,7 +383,7 @@ public class UserController {
     }
 
     /**
-     * 添加群聊
+     * 获取消息盒子信息
      *
      * @param
      */
@@ -389,11 +391,13 @@ public class UserController {
     public ResultPageVO getMsgBox(@RequestBody MsgBoxReq req) {
         log.info("获取消息盒子信息req: {}", req);
         List<MsgBoxResp> messageBox = userService.getMessageBox(req);
-        return ResultPageVO.success(messageBox, messageBox.size());
+        Integer boxCount = userService.getMessageBoxCount(req.getUserId());
+        return ResultPageVO.success(messageBox, boxCount);
     }
 
     /**
      * 查看离线消息数量
+     *
      * @param uid
      * @return
      */
@@ -404,14 +408,16 @@ public class UserController {
     }
 
     /**
-     * 查看离线消息数量
+     * 将未读消息设置为已读
+     *
      * @param uid
      * @return
      */
     @GetMapping("setMessageRead.do")
     public ResultVO setMessageRead(@RequestParam Long uid) {
-        Integer boxCount = userService.getMessageBoxCount(uid);
-        return success(boxCount);
+        log.info("将消息设为已读：{}", uid);
+        userService.setMessageRead(uid);
+        return success();
     }
 
 

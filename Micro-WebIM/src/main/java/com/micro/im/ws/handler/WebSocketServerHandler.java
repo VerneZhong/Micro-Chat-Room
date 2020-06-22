@@ -15,10 +15,13 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static com.micro.common.constant.ServerConstant.OFFLINE;
+import static com.micro.common.constant.ServerConstant.ONLINE;
 import static com.micro.im.ws.WsServer.*;
 
 /**
@@ -35,8 +38,11 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
      */
     private final ChannelGroup channelGroup;
 
-    public WebSocketServerHandler(ChannelGroup channelGroup) {
+    private final Map<Long, Channel> channelMap;
+
+    public WebSocketServerHandler(ChannelGroup channelGroup, Map<Long, Channel> channelMap) {
         this.channelGroup = channelGroup;
+        this.channelMap = channelMap;
     }
 
     @Override
@@ -59,12 +65,17 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
         String text = frame.text();
         log.info("ws message: {}", text);
         String type = JsonUtil.getRootValueByKey(text, "type");
-        if (type != null) {
+        if (StringUtils.isNotBlank(type)) {
             switch (type) {
                 case "login":
                     // 发送上线消息
-                    String uid = JsonUtil.getRootValueByKey(text, "uid");
-                   ctx.channel().attr(USER_ID_KEY).getAndSet(Long.parseLong(uid));
+                    Optional<String> optional = Optional.ofNullable(JsonUtil.getRootValueByKey(text, "data"));
+                    if (optional.isPresent()) {
+                        long userId = Long.parseLong(optional.get());
+                        ctx.channel().attr(USER_ID_KEY).getAndSet(userId);
+                        setUserStatus(userId, ONLINE);
+                        channelMap.putIfAbsent(userId, ctx.channel());
+                    }
                     break;
                 case "chatMessage":
                     sendChatMessage(text, ctx.channel());
@@ -85,7 +96,21 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     }
 
     /**
+     * 设置用户在线状态
+     * @param userId
+     * @param status
+     * @throws Exception
+     */
+    private void setUserStatus(long userId, String status) throws Exception {
+        // 将用户置为离线状态
+        log.info("set user online status: {}", userId);
+        UserThriftService.Client userService = UserServerProvider.getUserService();
+        userService.setUserOffline(userId, status);
+    }
+
+    /**
      * 转发消息给其他客户端
+     *
      * @param text
      * @param client
      */
@@ -115,16 +140,16 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        // 断开连接发送消息
-        log.info("客户端断开连接：{}", ctx.channel().id().asLongText());
-        channelGroup.remove(ctx.channel());
-        Long removeId = getUserId(ctx.channel());
-        if (removeId != null) {
-            CLIENT_MAP.remove(removeId);
-            // 将用户置为离线状态
-            log.info("set user online status: {}", removeId);
-            UserThriftService.Client userService = UserServerProvider.getUserService();
-            userService.setUserOffline(removeId, OFFLINE);
+        if (!ctx.channel().isActive()) {
+            // 断开连接发送消息
+            log.info("客户端断开连接：{}", ctx.channel().id().asLongText());
+            channelGroup.remove(ctx.channel());
+            Long removeId = WsServer.getInstance().getUserId(ctx.channel());
+            if (removeId != null) {
+                CLIENT_MAP.remove(removeId);
+                // 将用户置为离线状态
+                setUserStatus(removeId, OFFLINE);
+            }
         }
     }
 

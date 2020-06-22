@@ -5,14 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.micro.common.constant.MessageType;
+import com.micro.common.constant.ServerConstant;
 import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.*;
 import com.micro.im.mapper.*;
-import com.micro.im.req.AddFriendGroupReq;
-import com.micro.im.req.AddFriendReq;
-import com.micro.im.req.MsgBoxReq;
-import com.micro.im.req.UserRegisterReq;
+import com.micro.im.req.*;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
 import com.micro.im.resp.MsgBoxResp;
@@ -35,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.micro.im.ws.WsServer.CLIENT_MAP;
 
 /**
  * class
@@ -323,33 +323,33 @@ public class UserServiceImpl implements UserService {
      * @param req
      */
     @Override
-    public void sendAddFriendReq(AddFriendReq req) {
+    public void sendAddFriendReq(AddFriendReq req) throws Exception {
         // 判断好友是否在线
         String status = (String) redisClient.get(req.getFriend().toString());
-        if ("online".equals(status)) {
+        if (ServerConstant.ONLINE.equals(status)) {
             // 发送ws消息给好友
-            Channel channel = WsServer.CLIENT_MAP.get(req.getFriend());
-            if (channel == null) {
-                insertOfflineMessage(req);
-                return;
-            }
+            Channel channel = CLIENT_MAP.get(req.getFriend());
             BaseMessageData<Long> messageData = new BaseMessageData<>();
             messageData.setType("addFriend");
             messageData.setData(req.getFriend());
-            channel.writeAndFlush(new TextWebSocketFrame(messageData.toString()));
+            log.info("send add friend ws req:{}", messageData);
+            WsServer.getInstance().sendMessage(channel, messageData);
+
+            insertMessage(req, 1);
         } else {
             // 将离线消息存入到mysql中
-            insertOfflineMessage(req);
+            insertMessage(req, 1);
         }
     }
 
     /**
-     * 将离线消息存入mysql
+     * 将未读消息存入mysql
      * @param req
+     * @param type
      */
-    private void insertOfflineMessage(AddFriendReq req) {
+    private void insertMessage(AddFriendReq req, int type) {
         MessageBox message = new MessageBox();
-        message.setType(1);
+        message.setType(type);
         message.setForm(req.getUid());
         message.setTo(req.getFriend());
         message.setFriendGroupId(req.getFriendgroup());
@@ -357,6 +357,7 @@ public class UserServiceImpl implements UserService {
         message.setStatus(1);
         message.setSendTime(LocalDateTime.now());
 
+        log.info("新增消息：{}", message);
         messageBoxMapper.insert(message);
     }
 
@@ -416,6 +417,38 @@ public class UserServiceImpl implements UserService {
         lambdaQueryWrapper.eq(MessageBox::getTo, userId);
         lambdaQueryWrapper.eq(MessageBox::getStatus, 1);
         return messageBoxMapper.selectCount(lambdaQueryWrapper);
+    }
+
+    /**
+     * 将消息设置为已读
+     * @param userId
+     */
+    @Override
+    public void setMessageRead(Long userId) {
+        LambdaQueryWrapper<MessageBox> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(MessageBox::getTo, userId);
+        MessageBox messageBox = new MessageBox();
+        messageBox.setStatus(7);
+        messageBoxMapper.update(messageBox, lambdaQueryWrapper);
+    }
+
+    /**
+     * 确认添加好友
+     * @param req
+     */
+    @Override
+    public void confirmAddFriend(ConfirmAddFriendReq req) {
+//        MessageBox message = new MessageBox();
+//        message.setType(7);
+//        message.setForm(req.getUid());
+//        message.setTo(req.getFriend());
+//        message.setFriendGroupId(req.getFriendgroup());
+//        message.setRemark(req.getRemark());
+//        message.setStatus(1);
+//        message.setSendTime(LocalDateTime.now());
+//
+//        log.info("新增消息：{}", message);
+//        messageBoxMapper.insert(message);
     }
 
     private MsgBoxResp transformMessageBox(MessageBox box) {
