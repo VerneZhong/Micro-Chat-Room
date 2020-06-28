@@ -4,7 +4,7 @@
 layui.config({
     base: 'js/'
 });
-var host = 'ws://localhost:8080/im';
+var host = 'ws://127.0.0.1:8080/im';
 let token = $.cookie("token");
 // 记录当前时间并转成时间戳
 // const now = new Date().getTime();
@@ -14,6 +14,7 @@ let token = $.cookie("token");
 // const refresh = (now - leaveTime) <= 5000;
 layui.use(['layim', 'jquery'], function (layim) {
     let $ = layui.jquery;
+    var socket = new WebSocket(host);
     //基础配置
     layim.config({
         init: {
@@ -47,20 +48,24 @@ layui.use(['layim', 'jquery'], function (layim) {
         , voice: 'default.mp3'
     });
 
-    var socket = new WebSocket(host);
-
     // 获取基础信息
     layim.on('ready', function (options) {
         // 存储用户数据到本地
         window.localStorage.setItem("mine", JSON.stringify(options));
         // 查看消息盒子离线消息
         msgBox(options.mine.id);
+
+        // 加载成功时触发
+        socket.onopen = function () {
+            console.log('连接服务器成功！');
+            login(options.mine.id);
+        };
     });
 
     // ws open send login event
-    function login() {
+    function login(id) {
         let cache = JSON.parse(window.localStorage.getItem("mine"));
-        let uid = cache.mine.id;
+        let uid =  id ? id : cache.mine.id;
         socket.send(JSON.stringify({
             type: "login",
             data: uid
@@ -87,14 +92,14 @@ layui.use(['layim', 'jquery'], function (layim) {
     // 连接成功时触发
     socket.onopen = function () {
         console.log('连接服务器成功！');
-        login();
+        login(null);
     };
 
     // 关闭连接
     socket.onclose = function () {
         console.log('服务器关闭！');
         // 是否重连
-
+        socket = new WebSocket(host);
     };
 
     // 监听在线状态切换
@@ -146,13 +151,18 @@ layui.use(['layim', 'jquery'], function (layim) {
         // 事件名称
         let data = JSON.parse(res.data);
         console.log(data);
+        debugger;
         let emit = data.type;
         if (emit === 'chat') {
             layim.getMessage(data.data);
         } else if (emit === 'system') {
             layim.getMessage(data.data);
         } else if (emit === 'addFriend') {
+            // 刷新消息盒子数量
             msgBox(data.data);
+        } else if (emit === 'confirmAddFriend') {
+            // 确认添加好友
+            // layim.addList(data.data);
         }
     };
 

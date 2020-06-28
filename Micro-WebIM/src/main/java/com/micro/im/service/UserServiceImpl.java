@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.micro.common.constant.ServerConstant.HIDE;
+import static com.micro.common.constant.ServerConstant.ONLINE;
 import static com.micro.im.ws.WsServer.CLIENT_MAP;
 
 /**
@@ -94,7 +96,7 @@ public class UserServiceImpl implements UserService {
 
         List<FriendGroup> friendGroups = Lists.newArrayList();
 
-        if (!CollectionUtils.isEmpty(userFriendsGroups) && CollectionUtils.isEmpty(friendIds)) {
+        if (!CollectionUtils.isEmpty(userFriendsGroups) && !CollectionUtils.isEmpty(friendIds)) {
             friendGroups = userFriendsGroups.stream()
                     .map(userFriendsGroup -> {
                         FriendGroup friendGroup = new FriendGroup();
@@ -144,7 +146,8 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectById(userId);
         mine.setId(String.valueOf(userId));
         mine.setUsername(user.getNickname());
-        mine.setStatus((String) redisClient.get(userId.toString()));
+        String status = (String) redisClient.get(userId.toString());
+        mine.setStatus(status.equalsIgnoreCase(ONLINE) ? status : HIDE);
         mine.setAvatar(user.getAvatarAddress());
         mine.setSign(user.getSign());
         return mine;
@@ -166,17 +169,23 @@ public class UserServiceImpl implements UserService {
         friendGroup.setId(userFriendsGroup.getId());
 
         List<UserFriends> userFriends = userFriendsMap.get(userFriendsGroup.getId());
+        if (CollectionUtils.isEmpty(userFriends)) {
+            friendGroup.setList(Lists.newArrayList());
+            return friendGroup;
+        }
         List<Long> friendsList = userFriends.stream()
                 .map(UserFriends::getFriendId)
                 .collect(Collectors.toList());
 
+        List<FriendVO> friendVOS = Lists.newArrayList();
         for (Long friendId : friendsList) {
             List<User> users = userListMap.get(friendId);
-            List<FriendVO> friendVOS = users.stream()
+            List<FriendVO> friendVOList = users.stream()
                     .map(friend -> getFriendVO(friend))
                     .collect(Collectors.toList());
-            friendGroup.setList(friendVOS);
+            friendVOS.addAll(friendVOList);
         }
+        friendGroup.setList(friendVOS);
         return friendGroup;
     }
 
@@ -325,8 +334,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void sendAddFriendReq(AddFriendReq req) throws Exception {
         // 判断好友是否在线
-        String status = (String) redisClient.get(req.getFriend().toString());
-        if (ServerConstant.ONLINE.equals(status)) {
+        String status = getUserStatus(req.getFriend());
+        if (ONLINE.equals(status)) {
             // 发送ws消息给好友
             Channel channel = CLIENT_MAP.get(req.getFriend());
             BaseMessageData<Long> messageData = new BaseMessageData<>();
@@ -437,23 +446,59 @@ public class UserServiceImpl implements UserService {
      * @param req
      */
     @Override
-    public void confirmAddFriend(ConfirmAddFriendReq req) {
-//        MessageBox message = new MessageBox();
-//        message.setType(7);
-//        message.setForm(req.getUid());
-//        message.setTo(req.getFriend());
-//        message.setFriendGroupId(req.getFriendgroup());
-//        message.setRemark(req.getRemark());
-//        message.setStatus(1);
-//        message.setSendTime(LocalDateTime.now());
-//
-//        log.info("新增消息：{}", message);
-//        messageBoxMapper.insert(message);
+    public void confirmAddFriend(ConfirmAddFriendReq req) throws Exception {
+        // 发送消息给好友，已同意添加其好友
+        if (ONLINE.equals(getUserStatus(req.getFriend()))) {
+            // 发送ws消息给好友
+            Channel channel = CLIENT_MAP.get(req.getFriend());
+            BaseMessageData<Long> messageData = new BaseMessageData<>();
+            messageData.setType("confirmAddFriend");
+            messageData.setData(req.getFriend());
+            log.info("send add friend ws req:{}", messageData);
+            WsServer.getInstance().sendMessage(channel, messageData);
+
+            MessageBox message = new MessageBox();
+            message.setType(2);
+            message.setForm(req.getUid());
+            message.setTo(req.getFriend());
+            message.setFriendGroupId(req.getFromGroup());
+            message.setStatus(1);
+            message.setSendTime(LocalDateTime.now());
+
+            log.info("新增消息：{}", message);
+            messageBoxMapper.insert(message);
+        } else {
+
+        }
+
+        // 更新该消息状态
+        MessageBox messageBox = new MessageBox();
+        messageBox.setId(req.getMessageId());
+        messageBox.setStatus(2);
+        messageBoxMapper.updateById(messageBox);
+
+        UserFriends userFriends = new UserFriends();
+        userFriends.setUserId(req.getUid());
+        userFriends.setFriendId(req.getFriend());
+        userFriends.setGroupId(req.getGroup());
+        userFriendsMapper.insert(userFriends);
+
+        UserFriends friends = new UserFriends();
+        friends.setUserId(req.getFriend());
+        friends.setFriendId(req.getUid());
+        friends.setGroupId(req.getFromGroup());
+        userFriendsMapper.insert(friends);
+    }
+
+    private String getUserStatus(Long friend) {
+        return (String) redisClient.get(friend.toString());
     }
 
     private MsgBoxResp transformMessageBox(MessageBox box) {
         MsgBoxResp resp = new MsgBoxResp();
+        resp.setMessageId(box.getId());
         resp.setFrom(box.getForm());
+        resp.setType(box.getType());
         resp.setFriendGroupId(box.getFriendGroupId().toString());
         resp.setTime(box.getSendTime().format(DateTimeFormatter.ISO_LOCAL_DATE));
         resp.setContent(MessageType.getMessage(box.getType()));

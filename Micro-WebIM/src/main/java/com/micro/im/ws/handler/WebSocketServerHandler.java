@@ -46,18 +46,9 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
-            // 握手成功
-
-        }
-        super.userEventTriggered(ctx, evt);
-    }
-
-    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // 和服务器建立连接
-        channelGroup.add(ctx.channel());
+//        channelGroup.add(ctx.channel());
     }
 
     @Override
@@ -74,10 +65,13 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                         long userId = Long.parseLong(optional.get());
                         ctx.channel().attr(USER_ID_KEY).getAndSet(userId);
                         setUserStatus(userId, ONLINE);
+                        if (channelGroup.find(ctx.channel().id()) == null) {
+                            channelGroup.add(ctx.channel());
+                        }
                         channelMap.putIfAbsent(userId, ctx.channel());
                     }
                     break;
-                case "chatMessage":
+                case "chat":
                     sendChatMessage(text, ctx.channel());
                     break;
                 case "system":

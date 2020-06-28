@@ -13,7 +13,7 @@
 <textarea title="消息模版" id="LAY_tpl" style="display:none;">
 {{# layui.each(d.data, function(index, item){
   if(item.from){ }}
-    <li data-uid="{{ item.from }}" data-fromGroup="{{ item.friendGroupId }}">
+    <li data-uid="{{ item.from }}" data-fromGroup="{{ item.friendGroupId }}" data-mid="{{ item.messageId }}">
 <!--      <a href="/u/{{ item.from }}/" target="_blank">-->
       <a href="#" target="_blank">
         <img src="{{ item.user.avatar }}" class="layui-circle layim-msgbox-avatar">
@@ -107,6 +107,7 @@
                 var li = othis.parents('li')
                     , uid = li.data('uid')
                     , from_group = li.data('fromgroup')
+                    , messageId = li.data('mid')
                     , user = cache[uid];
                 //选择分组
                 debugger;
@@ -119,9 +120,11 @@
                         $.ajax({
                             type: "post",
                             data: JSON.stringify({
-                                uid: uid //对方用户ID
+                                uid: mine.mine.id // 当前用户ID
                                 , fromGroup: from_group // 对方设定的好友分组
                                 , group: group // 我设定的好友分组
+                                , friend: uid
+                                , messageId: messageId
                             }),
                             url: "confirmAddFriend.do",
                             dataType: 'JSON',
@@ -131,16 +134,17 @@
                                     return layer.msg(res.msg);
                                 }
                                 //将好友追加到主面板
-                                // layim.addList({
-                                //     type: 'friend'
-                                //     , avatar: user.avatar //好友头像
-                                //     , username: user.username //好友昵称
-                                //     , groupid: group //所在的分组id
-                                //     , id: uid //好友ID
-                                //     , sign: user.sign //好友签名
-                                // });
-                                // layer.close(index);
-                                // othis.parent().html('已同意');
+                                var data = {
+                                    type: 'friend'
+                                    , avatar: user.avatar //好友头像
+                                    , username: user.username //好友昵称
+                                    , groupid: group //所在的分组id
+                                    , id: uid //好友ID
+                                    , sign: user.sign //好友签名
+                                };
+                                parent.layui.layim.addList(data);
+                                layer.close(index);
+                                othis.parent().html('已同意');
                             }
                         });
                     }

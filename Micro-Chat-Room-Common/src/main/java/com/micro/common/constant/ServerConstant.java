@@ -48,4 +48,6 @@ public final class ServerConstant {
     public static final String ONLINE = "online";
 
     public static final String OFFLINE = "offline";
+
+    public static final String HIDE = "hide";
 }

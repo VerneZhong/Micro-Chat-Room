@@ -356,7 +356,7 @@ public class UserController {
      * @param
      */
     @PostMapping("/confirmAddFriend.do")
-    public ResultVO confirmAddFriend(@RequestBody ConfirmAddFriendReq req) {
+    public ResultVO confirmAddFriend(@RequestBody ConfirmAddFriendReq req) throws Exception {
         log.info("确认添加好友申请req：{}", req);
         userService.confirmAddFriend(req);
         return success();

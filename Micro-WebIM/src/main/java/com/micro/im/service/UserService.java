@@ -118,5 +118,5 @@ public interface UserService {
      * 确认添加好友
      * @param req
      */
-    void confirmAddFriend(ConfirmAddFriendReq req);
+    void confirmAddFriend(ConfirmAddFriendReq req) throws Exception;
 }
