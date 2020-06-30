@@ -10,35 +10,153 @@
 <body>
 
 <ul class="layim-msgbox" id="LAY_view"></ul>
-<textarea title="消息模版" id="LAY_tpl" style="display:none;">
-{{# layui.each(d.data, function(index, item){
-  if(item.from){ }}
-    <li data-uid="{{ item.from }}" data-fromGroup="{{ item.friendGroupId }}" data-mid="{{ item.messageId }}">
-<!--      <a href="/u/{{ item.from }}/" target="_blank">-->
-      <a href="#" target="_blank">
-        <img src="{{ item.user.avatar }}" class="layui-circle layim-msgbox-avatar">
-      </a>
-      <p class="layim-msgbox-user">
-<!--        <a href="/u/{{ item.from }}/" target="_blank">{{ item.user.username||'' }}</a>-->
-        <a href="#" target="_blank">{{ item.user.username||'' }}</a>
-        <span>{{ item.time }}</span>
-      </p>
-      <p class="layim-msgbox-content">
-        {{ item.content }} 
-        <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
-      </p>
-      <p class="layim-msgbox-btn">
-        <button class="layui-btn layui-btn-small" data-type="agree">同意</button>
-        <button class="layui-btn layui-btn-small layui-btn-primary" data-type="refuse">拒绝</button>
-      </p>
-    </li>
-  {{# } else { }}
-    <li class="layim-msgbox-system">
-      <p><em>系统：</em>{{ item.content }}<span>{{ item.time }}</span></p>
-    </li>
-  {{# }
-}); }}
-</textarea>
+<!--<textarea title="消息模版" id="LAY_tpl" style="display:none;">-->
+<!--{{# layui.each(d.data, function(index, item){-->
+<!--  if(item.from){ }}-->
+<!--    <li data-uid="{{ item.from }}" data-fromGroup="{{ item.friendGroupId }}" data-mid="{{ item.messageId }}">-->
+<!--&lt;!&ndash;      <a href="/u/{{ item.from }}/" target="_blank">&ndash;&gt;-->
+<!--      <a href="#" target="_blank">-->
+<!--        <img src="{{ item.user.avatar }}" class="layui-circle layim-msgbox-avatar">-->
+<!--      </a>-->
+<!--      <p class="layim-msgbox-user">-->
+<!--&lt;!&ndash;        <a href="/u/{{ item.from }}/" target="_blank">{{ item.user.username||'' }}</a>&ndash;&gt;-->
+<!--        <a href="#" target="_blank">{{ item.user.username||'' }}</a>-->
+<!--        <span>{{ item.time }}</span>-->
+<!--      </p>-->
+<!--      <p class="layim-msgbox-content">-->
+<!--        {{ item.content }} -->
+<!--        <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>-->
+<!--      </p>-->
+<!--      <p class="layim-msgbox-btn">-->
+<!--        <button class="layui-btn layui-btn-small" data-type="agree">同意</button>-->
+<!--        <button class="layui-btn layui-btn-small layui-btn-primary" data-type="refuse">拒绝</button>-->
+<!--      </p>-->
+<!--    </li>-->
+<!--  {{# } else { }}-->
+<!--    <li class="layim-msgbox-system">-->
+<!--      <p><em>系统：</em>{{ item.content }}<span>{{ item.time }}</span></p>-->
+<!--    </li>-->
+<!--  {{# }-->
+<!--}); }}-->
+<!--</textarea>-->
+
+    <textarea title="消息模版" id="LAY_tpl" style="display:none;">
+            {{# layui.each(d.data, function(index, item){
+                if(item.msgType == 1 || item.msgType == 3){ }}
+                    {{# if(item.from == d.data.memberIdx){ }}
+                        <li data-uid="{{ item.to }}">
+                          <a href="javascript:void(0);" target="_blank">
+                            <img src="{{ item.toInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/{{# if(item.msgType == 1){ }}empty2.jpg{{# }else{ }}empty1.jpg{{# } }} '">
+                          </a>
+                          <p class="layim-msgbox-user">
+                            <a href="javascript:void(0);" target="_blank"><b>{{ item.groupName||'' }}</b></a>
+                            <span>{{ item.sendTime }}</span>
+                          </p>
+                          <p class="layim-msgbox-content">
+                            {{# if(item.msgType == 1){ }}
+                            申请添加对方为好友
+                            {{# }else{ }}
+                            申请加入该群
+                            {{# } }}
+                            <span>{{ item.remark ? '附言: '+item.remark : '' }}</span>
+                          </p>
+                          <p class="layim-msgbox-btn">
+                            等待验证
+                          </p>
+                        </li>
+                    {{# }else{ }}
+<!--                                {{# if(item.groupIdx){ }} data-groupidx="{{ item.groupIdx||'' }}"  data-group="{{ item.groupName||'' }}" {{#} }}-->
+                        <li data-uid="{{ item.from }}" data-id="{{ item.msgIdx }}" data-type="{{item.msgType}}" data-name="{{ item.username }}" data-signature="{{ item.fromInfo.sign }}">
+                          <a href="javascript:void(0);" target="_blank">
+                            <img src="{{ item.fromInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/{{# if(item.msgType == 1){ }}empty2.jpg{{# }else{ }}empty1.jpg{{# } }} '">
+                          </a>
+                            <span>id： {{# d.data.memberIdx }}</span>
+                          <p class="layim-msgbox-user">
+                            <a href="javascript:void(0);" target="_blank"><b>{{ item.fromInfo.username||'' }}</b></a>
+                            <span>{{ item.sendTime }}</span>
+                          </p>
+                          <p class="layim-msgbox-content">
+                            {{# if(item.msgType == 1){ }}
+                            申请添加你为好友
+                            {{# }else{ }}
+                            申请加入 {{ item.groupName||'' }} 群
+                            {{# } }}
+                            <span>{{ item.remark ? '附言: '+item.remark : '' }}</span>
+                          </p>
+                          <p class="layim-msgbox-btn">
+                            <button class="layui-btn layui-btn-small" data-type="agree">同意</button>
+                            <button class="layui-btn layui-btn-small layui-btn-primary" data-type="refuse">拒绝</button>
+                          </p>
+                        </li>
+                    {{# } }}
+
+                {{# } else if(item.msgType == 2) { }}
+                    {{# if(item.from == d.data.memberIdx){ }}
+                        <li class="layim-msgbox-system">
+                            <p><em>系统：</em><b>{{ item.fromInfo.username }}</b>
+                            {{# if(item.status == 2 || item.status == 4){ }}
+                            已同意你的好友申请 <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-type="chat" data-uid="{{item.to}}">发起会话</button>
+                            {{# }else{ }}
+                            已拒绝你的好友申请
+                            {{# } }}
+                            <span>{{ item.readTime }}</span></p>
+                        </li>
+                    {{# }else{ }}
+                        <li>
+                          <a href="javascript:void(0);" target="_blank">
+                            <img src="{{ item.fromInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/empty2.jpg'">
+                          </a>
+                          <p class="layim-msgbox-user">
+                            <a href="javascript:void(0);" target="_blank"><b>{{ item.fromInfo.username||'' }}</b></a>
+                            <span>{{ item.sendTime }}</span>
+                          </p>
+                          <p class="layim-msgbox-content">
+                            申请添加你为好友
+                            <span>{{ item.remark ? '附言: '+item.remark : '' }}</span>
+                            {{# if(item.status == 2 || item.status == 4){ }}
+                            <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-type="chat" data-uid="{{item.from}}">发起会话</button>
+                            {{# } }}
+
+                          </p>
+                          <p class="layim-msgbox-btn">
+                            {{# if(item.status == 2 || item.status == 4){ }}
+                            已同意
+                            {{# }else{ }}
+                            已拒绝
+                            {{# } }}
+
+                          </p>
+                        </li>
+
+                    {{# } }}
+
+                {{# }else if(item.msgType == 4){ }}
+                    {{# if(item.from == d.data.memberIdx){ }}
+                        <li class="layim-msgbox-system">
+                            <p><em>系统：</em> 管理员 {{ item.handle }}
+                            {{# if(item.status == 2 || item.status == 4){ }}
+                            已同意你加入群 <b>{{ item.groupName }}</b> <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.groupName }}" data-chattype="group" data-type="chat" data-uid="{{item.to}}">发起会话</button>
+                            {{# }else{ }}
+                            已拒绝你加入群 <b>{{ item.groupName }}</b>
+                            {{# } }}
+                            <span>{{ item.readTime }}</span></p>
+                        </li>
+                    {{# }else{ }}
+                        <li class="layim-msgbox-system">
+                            <p><em>系统：</em>
+                            管理员{{ item.handle }}
+                            {{# if(item.status == 2 || item.status == 4){ }}
+                            已同意 <b>{{ item.username }}</b> 加入群 <b>{{ item.groupName }}</b>
+                            {{# }else{ }}
+                            你已拒绝 <b>{{ item.username }}</b> 加入群 <b>{{ item.groupName }}</b>
+                            {{# } }}
+                            <span>{{ item.readTime }}</span></p>
+                        </li>
+                    {{# } }}
+
+                {{# }
+            }); }}
+    </textarea>
 <script src="layui/layui.js"></script>
 <script>
     layui.use(['layim', 'flow'], function () {
@@ -68,10 +186,10 @@
                         return layer.msg(res.msg);
                     }
                     // 记录来源用户信息
-                    layui.each(res.data, function (index, item) {
+                    layui.each(res, function (index, item) {
                         cache[item.from] = item.user;
                     });
-                    callback && callback(res.data, Math.ceil(res.pages / 10));
+                    callback && callback(res, Math.ceil(res.pages / 10));
                 }
             });
         };
@@ -107,7 +225,7 @@
                 var li = othis.parents('li')
                     , uid = li.data('uid')
                     , from_group = li.data('fromgroup')
-                    , messageId = li.data('mid')
+                    , messageId = li.data('id')
                     , user = cache[uid];
                 //选择分组
                 debugger;
@@ -149,10 +267,8 @@
                         });
                     }
                 });
-            }
-
-            //拒绝
-            , refuse: function (othis) {
+            }, refuse: function (othis) {
+                //拒绝
                 var li = othis.parents('li')
                     , uid = li.data('uid');
 
@@ -166,6 +282,15 @@
                         layer.close(index);
                         othis.parent().html('<em>已拒绝</em>');
                     });
+                });
+            },chat: function(othis){
+                //发起好友聊天
+                var  uid = othis.data('uid'), avatar = othis.data('avatar');
+                parent.layui.layim.chat({
+                    name: othis.data('name')
+                    ,type: othis.data('chattype')
+                    ,avatar: avatar
+                    ,id: uid
                 });
             }
         };

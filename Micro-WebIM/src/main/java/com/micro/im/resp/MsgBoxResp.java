@@ -11,12 +11,17 @@ import lombok.Data;
  */
 @Data
 public class MsgBoxResp {
-    private Long messageId;
+    private Long msgIdx;
     private Long from;
-    private Mine user;
-    private Integer type;
+    private Mine fromInfo;
+    private Long to;
+    private Mine toInfo;
+    private Integer msgType;
     private String friendGroupId;
     private String content;
     private String remark;
-    private String time;
+    private String sendTime;
+    private String readTime;
+    private Integer status;
+    private String handle;
 }

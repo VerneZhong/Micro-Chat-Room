@@ -28,10 +28,7 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.micro.common.constant.ServerConstant.HIDE;
@@ -96,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
         List<FriendGroup> friendGroups = Lists.newArrayList();
 
-        if (!CollectionUtils.isEmpty(userFriendsGroups) && !CollectionUtils.isEmpty(friendIds)) {
+        if (!CollectionUtils.isEmpty(userFriendsGroups)) {
             friendGroups = userFriendsGroups.stream()
                     .map(userFriendsGroup -> {
                         FriendGroup friendGroup = new FriendGroup();
@@ -404,8 +401,10 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public List<MsgBoxResp> getMessageBox(MsgBoxReq req) {
-        LambdaQueryWrapper<MessageBox> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(MessageBox::getTo, req.getUserId());
+        LambdaQueryWrapper<MessageBox> lambdaQueryWrapper = new LambdaQueryWrapper<MessageBox>()
+                .eq(MessageBox::getTo, req.getUserId())
+                .or()
+                .eq(MessageBox::getForm, req.getUserId());
         Page<MessageBox> page = new Page<>();
         page.setCurrent(req.getPage());
         Page<MessageBox> messageBoxPage = messageBoxMapper.selectPage(page, lambdaQueryWrapper);
@@ -496,16 +495,19 @@ public class UserServiceImpl implements UserService {
 
     private MsgBoxResp transformMessageBox(MessageBox box) {
         MsgBoxResp resp = new MsgBoxResp();
-        resp.setMessageId(box.getId());
+        resp.setMsgIdx(box.getId());
         resp.setFrom(box.getForm());
-        resp.setType(box.getType());
+        resp.setTo(box.getTo());
+        resp.setMsgType(box.getType());
         resp.setFriendGroupId(box.getFriendGroupId().toString());
-        resp.setTime(box.getSendTime().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        resp.setSendTime(box.getSendTime().format(DateTimeFormatter.ISO_LOCAL_DATE));
         resp.setContent(MessageType.getMessage(box.getType()));
         resp.setRemark(box.getRemark());
+        resp.setStatus(box.getStatus());
+        resp.setReadTime(Optional.ofNullable(box.getReadTime()).map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse(""));
 
-        Mine mine = getMine(box.getForm());
-        resp.setUser(mine);
+        resp.setFromInfo(getMine(box.getForm()));
+        resp.setToInfo(getMine(box.getTo()));
         return resp;
     }
 }

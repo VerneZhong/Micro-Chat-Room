@@ -392,7 +392,7 @@ public class UserController {
         log.info("获取消息盒子信息req: {}", req);
         List<MsgBoxResp> messageBox = userService.getMessageBox(req);
         Integer boxCount = userService.getMessageBoxCount(req.getUserId());
-        return ResultPageVO.success(messageBox, boxCount);
+        return ResultPageVO.success(messageBox, boxCount, req.getUserId());
     }
 
     /**
@@ -416,7 +416,7 @@ public class UserController {
     @GetMapping("setMessageRead.do")
     public ResultVO setMessageRead(@RequestParam Long uid) {
         log.info("将消息设为已读：{}", uid);
-        userService.setMessageRead(uid);
+//        userService.setMessageRead(uid);
         return success();
     }
 
