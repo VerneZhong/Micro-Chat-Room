@@ -4,8 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.micro.common.constant.MessageType;
-import com.micro.common.constant.ServerConstant;
 import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.*;
@@ -19,7 +17,6 @@ import com.micro.im.ws.WsServer;
 import com.micro.im.ws.dto.AddFriendMessage;
 import com.micro.im.ws.upstream.BaseMessageData;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -374,6 +371,7 @@ public class UserServiceImpl implements UserService {
         message.setRemark(remark);
         message.setStatus(status);
         message.setSendTime(LocalDateTime.now());
+        message.setReadTime(LocalDateTime.now());
 
         log.info("新增消息：{}", message);
         messageBoxMapper.insert(message);
@@ -462,32 +460,61 @@ public class UserServiceImpl implements UserService {
         if (ONLINE.equals(getUserStatus(req.getFriend()))) {
             // 发送ws消息给好友
             Channel channel = CLIENT_MAP.get(req.getFriend());
-            BaseMessageData<Long> messageData = new BaseMessageData<>();
+            BaseMessageData<AddFriendMessage> messageData = new BaseMessageData<>();
+            AddFriendMessage friendMessage = new AddFriendMessage();
+            Mine mine = getMine(req.getUid());
+            friendMessage.setId(req.getUid());
+            friendMessage.setUsername(mine.getUsername());
+            friendMessage.setAvatar(mine.getAvatar());
+            friendMessage.setType("friend");
+            friendMessage.setSign(mine.getSign());
+            friendMessage.setGroupid(req.getGroup());
             messageData.setType("confirmAddFriend");
-            messageData.setData(req.getFriend());
+            messageData.setData(friendMessage);
             log.info("send add friend ws req:{}", messageData);
             WsServer.getInstance().sendMessage(channel, messageData);
         }
-        // 新增系统消息
-        insertMessage(req.getUid(), req.getFriend(), req.getFromGroup(), null, 2, 2);
+        LambdaQueryWrapper<MessageBox> boxLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        boxLambdaQueryWrapper.eq(MessageBox::getType, 2)
+                .eq(MessageBox::getTo, req.getFriend())
+                .eq(MessageBox::getForm, req.getUid());
+        Integer count = messageBoxMapper.selectCount(boxLambdaQueryWrapper);
+        if (count == 0) {
+            // 新增系统消息
+            insertMessage(req.getUid(), req.getFriend(), req.getFromGroup(), null, 2, 2);
+        }
 
         // 更新该消息状态
         MessageBox messageBox = new MessageBox();
         messageBox.setId(req.getMessageId());
         messageBox.setStatus(2);
+        messageBox.setReadTime(LocalDateTime.now());
         messageBoxMapper.updateById(messageBox);
 
-        UserFriends userFriends = new UserFriends();
-        userFriends.setUserId(req.getUid());
-        userFriends.setFriendId(req.getFriend());
-        userFriends.setGroupId(req.getGroup());
-        userFriendsMapper.insert(userFriends);
+        // 是否已添加过好友
+        LambdaQueryWrapper<UserFriends> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserFriends::getUserId, req.getUid())
+                    .eq(UserFriends::getFriendId, req.getFriend());
+        Integer selectCount = userFriendsMapper.selectCount(queryWrapper);
+        if (selectCount == 0) {
+            UserFriends userFriends = new UserFriends();
+            userFriends.setUserId(req.getUid());
+            userFriends.setFriendId(req.getFriend());
+            userFriends.setGroupId(req.getGroup());
+            userFriendsMapper.insert(userFriends);
+        }
 
-        UserFriends friends = new UserFriends();
-        friends.setUserId(req.getFriend());
-        friends.setFriendId(req.getUid());
-        friends.setGroupId(req.getFromGroup());
-        userFriendsMapper.insert(friends);
+        queryWrapper.clear();
+        queryWrapper.eq(UserFriends::getUserId, req.getFriend())
+                .eq(UserFriends::getFriendId, req.getUid());
+        selectCount = userFriendsMapper.selectCount(queryWrapper);
+        if (selectCount == 0) {
+            UserFriends friends = new UserFriends();
+            friends.setUserId(req.getFriend());
+            friends.setFriendId(req.getUid());
+            friends.setGroupId(req.getFromGroup());
+            userFriendsMapper.insert(friends);
+        }
     }
 
     private String getUserStatus(Long friend) {
@@ -501,12 +528,10 @@ public class UserServiceImpl implements UserService {
         resp.setTo(box.getTo());
         resp.setMsgType(box.getType());
         resp.setFriendGroupId(box.getFriendGroupId().toString());
-        resp.setSendTime(box.getSendTime().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        resp.setContent(MessageType.getMessage(box.getType()));
+        resp.setSendTime(box.getSendTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         resp.setRemark(box.getRemark());
         resp.setStatus(box.getStatus());
-        resp.setReadTime(Optional.ofNullable(box.getReadTime()).map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse(""));
-
+        resp.setReadTime(Optional.ofNullable(box.getReadTime()).map(date -> date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).orElse(""));
         resp.setFromInfo(getMine(box.getForm()));
         resp.setToInfo(getMine(box.getTo()));
         return resp;

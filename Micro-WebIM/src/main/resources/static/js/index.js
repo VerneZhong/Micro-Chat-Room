@@ -147,11 +147,8 @@ layui.use(['layim', 'jquery'], function (layim) {
 
     // 接收消息
     socket.onmessage = function (res) {
-        console.log(res);
-        // 事件名称
         let data = JSON.parse(res.data);
         console.log(data);
-        debugger;
         let emit = data.type;
         if (emit === 'chat') {
             layim.getMessage(data.data);
@@ -162,7 +159,7 @@ layui.use(['layim', 'jquery'], function (layim) {
             msgBox(data.data);
         } else if (emit === 'confirmAddFriend') {
             // 确认添加好友
-            // layim.addList(data.data);
+            layim.addList(JSON.parse(data.data));
         }
     };
 

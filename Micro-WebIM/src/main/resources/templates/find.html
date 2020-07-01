@@ -42,7 +42,7 @@
 				{{# if(d.type == 'friend'){ }}
 					{{#  layui.each(d.data, function(index, item){ }}
 					<div class="layui-col-xs3 layui-find-list">
-						<li layim-event="add" data-type="friend" data-index="0" data-uid="{{ item.id }}"
+						<li layim-event="add" data-type="friend" data-index="0" data-avatar="{{item.avatar}}" data-uid="{{ item.id }}"
                             data-name="{{item.nickname}}">
 							<img src="{{item.avatar}}"
                                  onerror="javascript:this.src='image/photo/qq.png'">

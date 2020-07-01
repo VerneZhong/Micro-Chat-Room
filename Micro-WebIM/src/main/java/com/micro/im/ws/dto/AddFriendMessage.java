@@ -30,7 +30,7 @@ public class AddFriendMessage {
     /**
      * 好友ID
      */
-    private String id;
+    private Long id;
     /**
      * 好友签名
      */

@@ -36,7 +36,7 @@
                         </li>
                     {{# }else{ }}
 <!--                                {{# if(item.groupIdx){ }} data-groupidx="{{ item.groupIdx||'' }}"  data-group="{{ item.groupName||'' }}" {{#} }}-->
-                        <li data-uid="{{ item.from }}" data-id="{{ item.msgIdx }}" data-type="{{item.msgType}}" data-name="{{ item.username }}" data-signature="{{ item.fromInfo.sign }}">
+                        <li data-uid="{{ item.from }}" data-id="{{ item.msgIdx }}" data-type="{{item.msgType}}" data-name="{{ item.fromInfo.username }}" data-fromgroupid="{{item.friendGroupId}}" data-signature="{{ item.fromInfo.sign }}">
                           <a href="javascript:void(0);" target="_blank">
                             <img src="{{ item.fromInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/{{# if(item.msgType == 1){ }}empty2.jpg{{# }else{ }}empty1.jpg{{# } }} '">
                           </a>
@@ -53,18 +53,22 @@
                             <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
                           </p>
                           <p class="layim-msgbox-btn">
-                            <button class="layui-btn layui-btn-small" data-type="agree">同意</button>
-                            <button class="layui-btn layui-btn-small layui-btn-primary" data-type="refuse">拒绝</button>
+                            {{# if(item.status == 2 || item.status == 4){ }}
+                               已同意
+                            {{# }else{ }}
+                                <button class="layui-btn layui-btn-small" data-type="agree">同意</button>
+                                <button class="layui-btn layui-btn-small layui-btn-primary" data-type="refuse">拒绝</button>
+                              {{# } }}
                           </p>
                         </li>
                     {{# } }}
 
                 {{# } else if(item.msgType == 2) { }}
-                    {{# if(item.from == d.data.currentUser){ }}
+                    {{# if(item.to == d.data.currentUser){ }}
                         <li class="layim-msgbox-system">
                             <p><em>系统：</em><b>{{ item.fromInfo.username }}</b>
                             {{# if(item.status == 2 || item.status == 4){ }}
-                            已同意你的好友申请 <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-type="chat" data-uid="{{item.to}}">发起会话</button>
+                            已同意你的好友申请 <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-avatar="{{ item.fromInfo.avatar }}" data-type="chat" data-uid="{{item.from}}">发起会话</button>
                             {{# }else{ }}
                             已拒绝你的好友申请
                             {{# } }}
@@ -73,19 +77,18 @@
                     {{# }else{ }}
                         <li>
                           <a href="javascript:void(0);" target="_blank">
-                            <img src="{{ item.fromInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/empty2.jpg'">
+                            <img src="{{ item.toInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/empty2.jpg'">
                           </a>
                           <p class="layim-msgbox-user">
-                            <a href="javascript:void(0);" target="_blank"><b>{{ item.fromInfo.username||'' }}</b></a>
+                            <a href="javascript:void(0);" target="_blank"><b>{{ item.toInfo.username||'' }}</b></a>
                             <span>{{ item.sendTime }}</span>
                           </p>
                           <p class="layim-msgbox-content">
-                            申请添加你为好友
+                            同意添加对方为好友
                             <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
                             {{# if(item.status == 2 || item.status == 4){ }}
                             <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-type="chat" data-uid="{{item.from}}">发起会话</button>
                             {{# } }}
-
                           </p>
                           <p class="layim-msgbox-btn">
                             {{# if(item.status == 2 || item.status == 4){ }}
@@ -93,12 +96,9 @@
                             {{# }else{ }}
                             已拒绝
                             {{# } }}
-
                           </p>
                         </li>
-
                     {{# } }}
-
                 {{# }else if(item.msgType == 4){ }}
                     {{# if(item.from == d.data.currentUser){ }}
                         <li class="layim-msgbox-system">
@@ -155,8 +155,8 @@
                         return layer.msg(res.msg);
                     }
                     // 记录来源用户信息
-                    layui.each(res, function (index, item) {
-                        cache[item.from] = item.user;
+                    layui.each(res.data, function (index, item) {
+                        cache[item.from] = item.fromInfo;
                     });
                     callback && callback(res, Math.ceil(res.pages / 10));
                 }
@@ -193,7 +193,7 @@
             agree: function (othis) {
                 var li = othis.parents('li')
                     , uid = li.data('uid')
-                    , from_group = li.data('fromgroup')
+                    , from_group = li.data('fromgroupid')
                     , messageId = li.data('id')
                     , user = cache[uid];
                 //选择分组
@@ -252,7 +252,7 @@
                         othis.parent().html('<em>已拒绝</em>');
                     });
                 });
-            },chat: function(othis){
+            }, chat: function(othis){
                 //发起好友聊天
                 var  uid = othis.data('uid'), avatar = othis.data('avatar');
                 parent.layui.layim.chat({

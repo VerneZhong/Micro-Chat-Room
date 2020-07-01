@@ -41,13 +41,13 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
         var li = othis.parents('li') || othis.parent()
             , uid = li.data('uid') || li.data('id')
             , approval = li.data('approval')
+            , avatar = li.data('avatar')
             , name = li.data('name');
         if (uid === 'undefined' || !uid) {
             var uid = othis.parent().data('id'), name = othis.parent().data('name');
         }
         var isAdd = false;
         var mineId = cache.mine.id;
-        var avatar = cache.mine.avatar;
         if (type === 'friend') {
             var default_avatar = 'image/photo/empty2.jpg';
             if (mineId === uid) {
@@ -71,7 +71,7 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
                 }
             }
         }
-
+        debugger;
         //弹出添加好友对话框
         layim.add({
             isAdd: isAdd
@@ -97,10 +97,6 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
                         contentType: "application/json",
                         success: function (res) {
                             if (res.code === 0) {
-                                // conn.subscribe({
-                                //     to: uid,
-                                //     message: remark
-                                // });
                                 layer.msg('你申请添加' + name + '为好友的消息已发送。请等待对方确认');
                             } else {
                                 layer.msg('你申请添加' + name + '为好友的消息发送失败。请刷新浏览器后重试');
@@ -135,8 +131,6 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
                             }
                         }
                     };
-                    // 请求加群接口
-                    // conn.joinGroup(options);
                 }
             }, function() {
                 layer.close(index);
