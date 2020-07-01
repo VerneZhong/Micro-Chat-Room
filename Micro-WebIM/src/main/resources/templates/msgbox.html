@@ -10,46 +10,16 @@
 <body>
 
 <ul class="layim-msgbox" id="LAY_view"></ul>
-<!--<textarea title="消息模版" id="LAY_tpl" style="display:none;">-->
-<!--{{# layui.each(d.data, function(index, item){-->
-<!--  if(item.from){ }}-->
-<!--    <li data-uid="{{ item.from }}" data-fromGroup="{{ item.friendGroupId }}" data-mid="{{ item.messageId }}">-->
-<!--&lt;!&ndash;      <a href="/u/{{ item.from }}/" target="_blank">&ndash;&gt;-->
-<!--      <a href="#" target="_blank">-->
-<!--        <img src="{{ item.user.avatar }}" class="layui-circle layim-msgbox-avatar">-->
-<!--      </a>-->
-<!--      <p class="layim-msgbox-user">-->
-<!--&lt;!&ndash;        <a href="/u/{{ item.from }}/" target="_blank">{{ item.user.username||'' }}</a>&ndash;&gt;-->
-<!--        <a href="#" target="_blank">{{ item.user.username||'' }}</a>-->
-<!--        <span>{{ item.time }}</span>-->
-<!--      </p>-->
-<!--      <p class="layim-msgbox-content">-->
-<!--        {{ item.content }} -->
-<!--        <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>-->
-<!--      </p>-->
-<!--      <p class="layim-msgbox-btn">-->
-<!--        <button class="layui-btn layui-btn-small" data-type="agree">同意</button>-->
-<!--        <button class="layui-btn layui-btn-small layui-btn-primary" data-type="refuse">拒绝</button>-->
-<!--      </p>-->
-<!--    </li>-->
-<!--  {{# } else { }}-->
-<!--    <li class="layim-msgbox-system">-->
-<!--      <p><em>系统：</em>{{ item.content }}<span>{{ item.time }}</span></p>-->
-<!--    </li>-->
-<!--  {{# }-->
-<!--}); }}-->
-<!--</textarea>-->
-
     <textarea title="消息模版" id="LAY_tpl" style="display:none;">
-            {{# layui.each(d.data, function(index, item){
+            {{# layui.each(d.data.data, function(index, item){
                 if(item.msgType == 1 || item.msgType == 3){ }}
-                    {{# if(item.from == d.data.memberIdx){ }}
+                    {{# if(item.from == d.data.currentUser){ }}
                         <li data-uid="{{ item.to }}">
                           <a href="javascript:void(0);" target="_blank">
                             <img src="{{ item.toInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/{{# if(item.msgType == 1){ }}empty2.jpg{{# }else{ }}empty1.jpg{{# } }} '">
                           </a>
                           <p class="layim-msgbox-user">
-                            <a href="javascript:void(0);" target="_blank"><b>{{ item.groupName||'' }}</b></a>
+                            <a href="javascript:void(0);" target="_blank"><b>{{ item.toInfo.username||'' }}</b></a>
                             <span>{{ item.sendTime }}</span>
                           </p>
                           <p class="layim-msgbox-content">
@@ -58,7 +28,7 @@
                             {{# }else{ }}
                             申请加入该群
                             {{# } }}
-                            <span>{{ item.remark ? '附言: '+item.remark : '' }}</span>
+                            <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
                           </p>
                           <p class="layim-msgbox-btn">
                             等待验证
@@ -70,7 +40,6 @@
                           <a href="javascript:void(0);" target="_blank">
                             <img src="{{ item.fromInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/{{# if(item.msgType == 1){ }}empty2.jpg{{# }else{ }}empty1.jpg{{# } }} '">
                           </a>
-                            <span>id： {{# d.data.memberIdx }}</span>
                           <p class="layim-msgbox-user">
                             <a href="javascript:void(0);" target="_blank"><b>{{ item.fromInfo.username||'' }}</b></a>
                             <span>{{ item.sendTime }}</span>
@@ -81,7 +50,7 @@
                             {{# }else{ }}
                             申请加入 {{ item.groupName||'' }} 群
                             {{# } }}
-                            <span>{{ item.remark ? '附言: '+item.remark : '' }}</span>
+                            <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
                           </p>
                           <p class="layim-msgbox-btn">
                             <button class="layui-btn layui-btn-small" data-type="agree">同意</button>
@@ -91,7 +60,7 @@
                     {{# } }}
 
                 {{# } else if(item.msgType == 2) { }}
-                    {{# if(item.from == d.data.memberIdx){ }}
+                    {{# if(item.from == d.data.currentUser){ }}
                         <li class="layim-msgbox-system">
                             <p><em>系统：</em><b>{{ item.fromInfo.username }}</b>
                             {{# if(item.status == 2 || item.status == 4){ }}
@@ -112,7 +81,7 @@
                           </p>
                           <p class="layim-msgbox-content">
                             申请添加你为好友
-                            <span>{{ item.remark ? '附言: '+item.remark : '' }}</span>
+                            <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
                             {{# if(item.status == 2 || item.status == 4){ }}
                             <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-type="chat" data-uid="{{item.from}}">发起会话</button>
                             {{# } }}
@@ -131,7 +100,7 @@
                     {{# } }}
 
                 {{# }else if(item.msgType == 4){ }}
-                    {{# if(item.from == d.data.memberIdx){ }}
+                    {{# if(item.from == d.data.currentUser){ }}
                         <li class="layim-msgbox-system">
                             <p><em>系统：</em> 管理员 {{ item.handle }}
                             {{# if(item.status == 2 || item.status == 4){ }}
@@ -200,9 +169,9 @@
             , isAuto: false
             , end: '<li class="layim-msgbox-tips">暂无更多新消息</li>'
             , done: function (page, next) { //加载下一页
-                renderMsg(page, function (data, pages) {
+                renderMsg(page, function (res, pages) {
                     var html = laytpl(LAY_tpl.value).render({
-                        data: data
+                        data: res
                         , page: page
                     });
                     next(html, page < pages);

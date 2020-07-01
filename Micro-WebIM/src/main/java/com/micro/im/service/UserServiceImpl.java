@@ -144,7 +144,7 @@ public class UserServiceImpl implements UserService {
         mine.setId(String.valueOf(userId));
         mine.setUsername(user.getNickname());
         String status = (String) redisClient.get(userId.toString());
-        mine.setStatus(status.equalsIgnoreCase(ONLINE) ? status : HIDE);
+        mine.setStatus(ONLINE.equalsIgnoreCase(status) ? status : HIDE);
         mine.setAvatar(user.getAvatarAddress());
         mine.setSign(user.getSign());
         return mine;
@@ -340,27 +340,39 @@ public class UserServiceImpl implements UserService {
             messageData.setData(req.getFriend());
             log.info("send add friend ws req:{}", messageData);
             WsServer.getInstance().sendMessage(channel, messageData);
+        }
+        // 是否已有申请的消息
+        int type = 1;
+        LambdaQueryWrapper<MessageBox> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(MessageBox::getType, type)
+                .eq(MessageBox::getForm, req.getUid())
+                .eq(MessageBox::getTo, req.getFriend())
+                .eq(MessageBox::getStatus, 1);
 
-            insertMessage(req, 1);
-        } else {
-            // 将离线消息存入到mysql中
-            insertMessage(req, 1);
+        Integer selectCount = messageBoxMapper.selectCount(queryWrapper);
+        if (selectCount == 0) {
+            // 将消息存入到mysql中
+            insertMessage(req.getUid(), req.getFriend(), req.getFriendgroup(), req.getRemark(), type, 1);
         }
     }
 
     /**
      * 将未读消息存入mysql
-     * @param req
-     * @param type
+     * @param form 消息发送者
+     * @param to   消息接收者
+     * @param friendGroupId 好友分组
+     * @param remark    备注
+     * @param type      消息类型
+     * @param status    消息状态
      */
-    private void insertMessage(AddFriendReq req, int type) {
+    private void insertMessage(Long form, Long to, Long friendGroupId, String remark, int type, int status) {
         MessageBox message = new MessageBox();
         message.setType(type);
-        message.setForm(req.getUid());
-        message.setTo(req.getFriend());
-        message.setFriendGroupId(req.getFriendgroup());
-        message.setRemark(req.getRemark());
-        message.setStatus(1);
+        message.setForm(form);
+        message.setTo(to);
+        message.setFriendGroupId(friendGroupId);
+        message.setRemark(remark);
+        message.setStatus(status);
         message.setSendTime(LocalDateTime.now());
 
         log.info("新增消息：{}", message);
@@ -455,20 +467,9 @@ public class UserServiceImpl implements UserService {
             messageData.setData(req.getFriend());
             log.info("send add friend ws req:{}", messageData);
             WsServer.getInstance().sendMessage(channel, messageData);
-
-            MessageBox message = new MessageBox();
-            message.setType(2);
-            message.setForm(req.getUid());
-            message.setTo(req.getFriend());
-            message.setFriendGroupId(req.getFromGroup());
-            message.setStatus(1);
-            message.setSendTime(LocalDateTime.now());
-
-            log.info("新增消息：{}", message);
-            messageBoxMapper.insert(message);
-        } else {
-
         }
+        // 新增系统消息
+        insertMessage(req.getUid(), req.getFriend(), req.getFromGroup(), null, 2, 2);
 
         // 更新该消息状态
         MessageBox messageBox = new MessageBox();

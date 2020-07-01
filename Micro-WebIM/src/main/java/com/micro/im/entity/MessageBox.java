@@ -33,12 +33,10 @@ public class MessageBox extends Model<MessageBox> {
     /**
      * 消息类型：
      * 1为请求添加用户消息；
-     * 2为系统消息（同意添加好友）；
-     * 3为系统消息（拒绝添加好友）；
-     * 4为请求加群消息；
-     * 5为系统消息（同意添加群系统消息）；
-     * 6为系统消息（拒绝添加群系统消息）；
-     * 7为全体用户消息（公告等）
+     * 2为系统消息（添加好友）；
+     * 3为请求加群消息；
+     * 4为系统消息（添加群系统消息）
+     * 5为为全体用户消息
      */
     private Integer type;
 
@@ -54,7 +52,7 @@ public class MessageBox extends Model<MessageBox> {
     private Long to;
 
     /**
-     * 1未读，2同意，3拒绝，4同意且返回消息已读，5拒绝且返回消息已读，6全体消息已读，7已读
+     * 1未读，2同意，3拒绝，4同意且返回消息已读，5拒绝且返回消息已读，6全体消息已读
      */
     private Integer status;
 

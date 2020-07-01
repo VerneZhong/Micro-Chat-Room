@@ -18,7 +18,7 @@ public class ResultPageVO<T> {
     private String msg;
     private T data;
     private Integer pages;
-    private Long memberIdx;
+    private Long currentUser;
 
     public static ResultPageVO success() {
         return ResultPageVO.builder()
@@ -27,13 +27,13 @@ public class ResultPageVO<T> {
                 .build();
     }
 
-    public static <T> ResultPageVO<T> success(T data, Integer pages, Long memberIdx) {
+    public static <T> ResultPageVO<T> success(T data, Integer pages, Long currentUser) {
         return ResultPageVO.<T>builder()
                 .code(BusinessCode.OK.getCode())
                 .msg(BusinessCode.OK.getMessage())
                 .data(data)
                 .pages(pages)
-                .memberIdx(memberIdx)
+                .currentUser(currentUser)
                 .build();
     }
 }
