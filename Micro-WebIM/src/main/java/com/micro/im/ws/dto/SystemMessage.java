@@ -19,7 +19,7 @@ public class SystemMessage {
     /**
      * 聊天窗口ID
      */
-    private Integer id;
+    private Long id;
     /**
      * 聊天窗口类型（friend/group）{@link IMP#FRIEND} {@link IMP#GROUP}
      */

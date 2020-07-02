@@ -36,7 +36,7 @@
                         </li>
                     {{# }else{ }}
 <!--                                {{# if(item.groupIdx){ }} data-groupidx="{{ item.groupIdx||'' }}"  data-group="{{ item.groupName||'' }}" {{#} }}-->
-                        <li data-uid="{{ item.from }}" data-id="{{ item.msgIdx }}" data-type="{{item.msgType}}" data-name="{{ item.fromInfo.username }}" data-fromgroupid="{{item.friendGroupId}}" data-signature="{{ item.fromInfo.sign }}">
+                        <li data-from="{{ item.from }}" data-to="{{item.to}}" data-id="{{ item.msgIdx }}" data-type="{{item.msgType}}" data-name="{{ item.fromInfo.username }}" data-fromgroupid="{{item.friendGroupId}}" data-signature="{{ item.fromInfo.sign }}">
                           <a href="javascript:void(0);" target="_blank">
                             <img src="{{ item.fromInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/{{# if(item.msgType == 1){ }}empty2.jpg{{# }else{ }}empty1.jpg{{# } }} '">
                           </a>
@@ -53,9 +53,11 @@
                             <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
                           </p>
                           <p class="layim-msgbox-btn">
-                            {{# if(item.status == 2 || item.status == 4){ }}
-                               已同意
-                            {{# }else{ }}
+                              {{# if(item.status == 2 || item.status == 4){ }}
+                                已同意
+                              {{# }else if(item.status == 3){ }}
+                                已拒绝
+                              {{# }else{ }}
                                 <button class="layui-btn layui-btn-small" data-type="agree">同意</button>
                                 <button class="layui-btn layui-btn-small layui-btn-primary" data-type="refuse">拒绝</button>
                               {{# } }}
@@ -64,11 +66,11 @@
                     {{# } }}
 
                 {{# } else if(item.msgType == 2) { }}
-                    {{# if(item.to == d.data.currentUser){ }}
+                    {{# if(item.from == d.data.currentUser){ }}
                         <li class="layim-msgbox-system">
-                            <p><em>系统：</em><b>{{ item.fromInfo.username }}</b>
+                            <p><em>系统：</em><b>{{ item.toInfo.username }}</b>
                             {{# if(item.status == 2 || item.status == 4){ }}
-                            已同意你的好友申请 <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-avatar="{{ item.fromInfo.avatar }}" data-type="chat" data-uid="{{item.from}}">发起会话</button>
+                            已同意你的好友申请 <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.toInfo.username }}" data-chattype="friend" data-avatar="{{ item.toInfo.avatar }}" data-type="chat" data-uid="{{item.to}}">发起会话</button>
                             {{# }else{ }}
                             已拒绝你的好友申请
                             {{# } }}
@@ -77,18 +79,22 @@
                     {{# }else{ }}
                         <li>
                           <a href="javascript:void(0);" target="_blank">
-                            <img src="{{ item.toInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/empty2.jpg'">
+                            <img src="{{ item.fromInfo.avatar }}" class="layui-circle layim-msgbox-avatar" onerror="javascript:this.src='/image/photo/empty2.jpg'">
                           </a>
                           <p class="layim-msgbox-user">
-                            <a href="javascript:void(0);" target="_blank"><b>{{ item.toInfo.username||'' }}</b></a>
+                            <a href="javascript:void(0);" target="_blank"><b>{{ item.fromInfo.username||'' }}</b></a>
                             <span>{{ item.sendTime }}</span>
                           </p>
                           <p class="layim-msgbox-content">
-                            同意添加对方为好友
-                            <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
-                            {{# if(item.status == 2 || item.status == 4){ }}
-                            <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-type="chat" data-uid="{{item.from}}">发起会话</button>
-                            {{# } }}
+                              {{# if(item.status == 2 || item.status == 4){ }}
+                                同意添加对方为好友
+                                <span>{{ item.remark ? '备注: '+item.remark : '' }}</span>
+                                <button class="layui-btn layui-btn-xs btncolor chat" data-name="{{ item.fromInfo.username }}" data-chattype="friend" data-type="chat" data-avatar="{{ item.fromInfo.avatar }}" data-uid="{{item.from}}">发起会话</button>
+                              {{# }else if(item.status == 3){ }}
+                                拒绝添加对方为好友
+<!--                              {{# }else{ }}-->
+<!--                                对方拒绝添加你为好友-->
+                              {{# } }}
                           </p>
                           <p class="layim-msgbox-btn">
                             {{# if(item.status == 2 || item.status == 4){ }}
@@ -122,7 +128,6 @@
                             <span>{{ item.readTime }}</span></p>
                         </li>
                     {{# } }}
-
                 {{# }
             }); }}
     </textarea>
@@ -180,24 +185,24 @@
         });
 
         //打开页面即把消息标记为已读
-        $.ajax({
-            type: "get",
-            url: "setMessageRead.do?uid=" + mine.mine.id,
-            dataType: 'JSON',
-            contentType: "application/json"
-        });
+        // $.ajax({
+        //     type: "get",
+        //     url: "setMessageRead.do?uid=" + mine.mine.id,
+        //     dataType: 'JSON',
+        //     contentType: "application/json"
+        // });
 
         //操作
         var active = {
             //同意
             agree: function (othis) {
                 var li = othis.parents('li')
-                    , uid = li.data('uid')
+                    , from = li.data('from')
+                    , to = li.data('to')
                     , from_group = li.data('fromgroupid')
                     , messageId = li.data('id')
-                    , user = cache[uid];
+                    , user = cache[from];
                 //选择分组
-                debugger;
                 layim.setFriendGroup({
                     type: 'friend'
                     , username: user.username
@@ -207,10 +212,10 @@
                         $.ajax({
                             type: "post",
                             data: JSON.stringify({
-                                uid: mine.mine.id // 当前用户ID
+                                uid: to // 当前用户ID
                                 , fromGroup: from_group // 对方设定的好友分组
                                 , group: group // 我设定的好友分组
-                                , friend: uid
+                                , friend: from
                                 , messageId: messageId
                             }),
                             url: "confirmAddFriend.do",
@@ -226,7 +231,7 @@
                                     , avatar: user.avatar //好友头像
                                     , username: user.username //好友昵称
                                     , groupid: group //所在的分组id
-                                    , id: uid //好友ID
+                                    , id: from //好友ID
                                     , sign: user.sign //好友签名
                                 };
                                 parent.layui.layim.addList(data);
@@ -239,13 +244,16 @@
             }, refuse: function (othis) {
                 //拒绝
                 var li = othis.parents('li')
-                    , uid = li.data('uid');
-
+                    , to = li.data('to')
+                    , messageId = li.data('id')
+                    , from = li.data('from');
                 layer.confirm('确定拒绝吗？', function (index) {
                     $.post('/refuseFriend.do', {
-                        uid: uid //对方用户ID
+                        to: to, //对方用户ID
+                        messageId : messageId,
+                        from: from
                     }, function (res) {
-                        if (res.code != 0) {
+                        if (res.code !== 0) {
                             return layer.msg(res.msg);
                         }
                         layer.close(index);

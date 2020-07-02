@@ -1,10 +1,12 @@
 package com.micro.im.ws.handler;
 
 import com.micro.common.dto.ChatMessage;
+import com.micro.common.dto.SetFriendStatusMessage;
 import com.micro.common.protocol.IMP;
 import com.micro.common.util.JsonUtil;
 import com.micro.im.ws.WsServer;
 import com.micro.im.ws.downstream.DownstreamMessageData;
+import com.micro.im.ws.dto.SystemMessage;
 import com.micro.im.ws.provider.UserServerProvider;
 import com.micro.im.ws.upstream.BaseMessageData;
 import com.micro.thrift.user.UserThriftService;
@@ -16,9 +18,14 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.thrift.TException;
+import org.springframework.util.CollectionUtils;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.micro.common.constant.ServerConstant.OFFLINE;
 import static com.micro.common.constant.ServerConstant.ONLINE;
@@ -62,8 +69,10 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                     // 发送上线消息
                     Optional<String> optional = Optional.ofNullable(JsonUtil.getRootValueByKey(text, "data"));
                     if (optional.isPresent()) {
-                        long userId = Long.parseLong(optional.get());
+                        String token = optional.get();
+                        long userId = getUserIdByToken(token);
                         ctx.channel().attr(USER_ID_KEY).getAndSet(userId);
+                        // 设置好友在线状态
                         setUserStatus(userId, ONLINE);
                         if (channelGroup.find(ctx.channel().id()) == null) {
                             channelGroup.add(ctx.channel());
@@ -91,15 +100,54 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
 
     /**
      * 设置用户在线状态
+     *
      * @param userId
      * @param status
      * @throws Exception
      */
     private void setUserStatus(long userId, String status) throws Exception {
-        // 将用户置为离线状态
+        // 设置用户在线状态
         log.info("set user online status: {}", userId);
         UserThriftService.Client userService = UserServerProvider.getUserService();
+        Objects.requireNonNull(userService);
         userService.setUserOffline(userId, status);
+
+        // 发送在线消息给好友
+        List<Long> friends = userService.getFriendByUserId(userId);
+        if (!CollectionUtils.isEmpty(friends)) {
+            List<Channel> channels = friends.stream().map(CLIENT_MAP::get).collect(Collectors.toList());
+            // 发送好友在线状态
+            SetFriendStatusMessage message = new SetFriendStatusMessage();
+            message.setId(userId);
+            message.setStatus(status);
+            BaseMessageData<SetFriendStatusMessage> baseMessageData = new BaseMessageData<>();
+            baseMessageData.setData(message);
+            baseMessageData.setType(IMP.SET_FRIEND_STATUS.getName());
+            channelGroup.writeAndFlush(new TextWebSocketFrame(baseMessageData.toString()), channels::contains);
+
+            SystemMessage systemMessage = new SystemMessage();
+            systemMessage.setId(userId);
+            systemMessage.setSystem(true);
+            systemMessage.setType(IMP.FRIEND.getName());
+            systemMessage.setContent(Objects.equals(status, ONLINE) ? "对方已上线" : "对方已掉线");
+            BaseMessageData<SystemMessage> systemBaseMessageData = new BaseMessageData<>();
+            systemBaseMessageData.setType(IMP.SYSTEM.getName());
+            systemBaseMessageData.setData(systemMessage);
+            channelGroup.writeAndFlush(new TextWebSocketFrame(systemBaseMessageData.toString()), channels::contains);
+        }
+    }
+
+    /**
+     * 获取用户ID
+     *
+     * @param token
+     * @return
+     * @throws TException
+     */
+    private long getUserIdByToken(String token) throws TException {
+        // 获取用户ID
+        UserThriftService.Client userService = UserServerProvider.getUserService();
+        return userService.getUserIdByToken(token);
     }
 
     /**

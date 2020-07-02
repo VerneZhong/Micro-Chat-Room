@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.micro.common.dto.SetFriendStatusMessage;
+import com.micro.common.protocol.IMP;
+import com.micro.common.util.DateUtil;
 import com.micro.common.util.MD5Util;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.*;
@@ -15,15 +18,16 @@ import com.micro.im.resp.MsgBoxResp;
 import com.micro.im.vo.*;
 import com.micro.im.ws.WsServer;
 import com.micro.im.ws.dto.AddFriendMessage;
+import com.micro.im.ws.dto.SystemMessage;
 import com.micro.im.ws.upstream.BaseMessageData;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,6 +69,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 获取用户list
+     *
      * @param userId
      * @return
      */
@@ -82,7 +87,8 @@ public class UserServiceImpl implements UserService {
         LambdaQueryWrapper<UserFriends> friendsLambdaQueryWrapper = new LambdaQueryWrapper<>();
         friendsLambdaQueryWrapper.eq(UserFriends::getUserId, userId);
         List<UserFriends> userFriends = userFriendsMapper.selectList(friendsLambdaQueryWrapper);
-        Map<Long, List<UserFriends>> userFriendsMap = userFriends.stream().collect(Collectors.groupingBy(UserFriends::getGroupId));
+        Map<Long, List<UserFriends>> userFriendsMap =
+                userFriends.stream().collect(Collectors.groupingBy(UserFriends::getGroupId));
 
         List<Long> friendIds = userFriends.stream()
                 .map(UserFriends::getFriendId)
@@ -185,7 +191,7 @@ public class UserServiceImpl implements UserService {
 
     private FriendVO getFriendVO(User friend) {
         FriendVO friendVO = new FriendVO();
-        String  id = friend.getId().toString();
+        String id = friend.getId().toString();
         friendVO.setId(id);
         friendVO.setUsername(friend.getNickname());
         friendVO.setAvatar(friend.getAvatarAddress());
@@ -197,6 +203,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 获取群员列表
+     *
      * @param groupId 群组ID
      * @return
      */
@@ -205,7 +212,7 @@ public class UserServiceImpl implements UserService {
         LambdaQueryWrapper<UserGroupRelation> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UserGroupRelation::getGroupId, groupId);
         List<Long> userIds = userGroupRelationMapper.selectList(queryWrapper).stream()
-                        .map(UserGroupRelation::getUserId).collect(Collectors.toList());
+                .map(UserGroupRelation::getUserId).collect(Collectors.toList());
 
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
         userLambdaQueryWrapper.in(User::getId, userIds);
@@ -227,6 +234,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 注册用户
+     *
      * @param req
      */
     @Override
@@ -250,6 +258,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 账号是否已存在
+     *
      * @param account
      * @return true -> 已存在
      */
@@ -263,6 +272,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 用户登录
+     *
      * @param account
      * @param password
      * @return
@@ -323,21 +333,13 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 发送添加好友请求
+     *
      * @param req
      */
     @Override
     public void sendAddFriendReq(AddFriendReq req) throws Exception {
-        // 判断好友是否在线
-        String status = getUserStatus(req.getFriend());
-        if (ONLINE.equals(status)) {
-            // 发送ws消息给好友
-            Channel channel = CLIENT_MAP.get(req.getFriend());
-            BaseMessageData<Long> messageData = new BaseMessageData<>();
-            messageData.setType("addFriend");
-            messageData.setData(req.getFriend());
-            log.info("send add friend ws req:{}", messageData);
-            WsServer.getInstance().sendMessage(channel, messageData);
-        }
+        // 发送有消息盒子ws消息
+        sendMessageBox(req.getFriend(), IMP.ADD_FRIEND);
         // 是否已有申请的消息
         int type = 1;
         LambdaQueryWrapper<MessageBox> queryWrapper = new LambdaQueryWrapper<>();
@@ -353,14 +355,29 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private void sendMessageBox(Long friend, IMP imp) throws Exception {
+        // 判断好友是否在线
+        String status = getUserStatus(friend);
+        if (ONLINE.equals(status)) {
+            // 发送ws消息给好友
+            Channel channel = CLIENT_MAP.get(friend);
+            BaseMessageData<Long> messageData = new BaseMessageData<>();
+            messageData.setType(imp.getName());
+            messageData.setData(friend);
+            log.info("send messagebox friend ws req:{}", messageData);
+            WsServer.getInstance().sendMessage(channel, messageData);
+        }
+    }
+
     /**
      * 将未读消息存入mysql
-     * @param form 消息发送者
-     * @param to   消息接收者
+     *
+     * @param form          消息发送者
+     * @param to            消息接收者
      * @param friendGroupId 好友分组
-     * @param remark    备注
-     * @param type      消息类型
-     * @param status    消息状态
+     * @param remark        备注
+     * @param type          消息类型
+     * @param status        消息状态
      */
     private void insertMessage(Long form, Long to, Long friendGroupId, String remark, int type, int status) {
         MessageBox message = new MessageBox();
@@ -370,8 +387,8 @@ public class UserServiceImpl implements UserService {
         message.setFriendGroupId(friendGroupId);
         message.setRemark(remark);
         message.setStatus(status);
-        message.setSendTime(LocalDateTime.now());
-        message.setReadTime(LocalDateTime.now());
+        message.setSendTime(DateUtil.getNow());
+        message.setReadTime(DateUtil.getNow());
 
         log.info("新增消息：{}", message);
         messageBoxMapper.insert(message);
@@ -379,6 +396,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 添加好友分组
+     *
      * @param req
      */
     @Override
@@ -391,6 +409,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 好友分组是否存在
+     *
      * @param userId
      * @param name
      * @return
@@ -406,6 +425,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 获取消息盒子消息
+     *
      * @param req
      * @return
      */
@@ -426,6 +446,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 获取消息盒子消息数量
+     *
      * @param userId
      * @return
      */
@@ -439,6 +460,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 将消息设置为已读
+     *
      * @param userId
      */
     @Override
@@ -452,6 +474,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 确认添加好友
+     *
      * @param req
      */
     @Override
@@ -466,10 +489,10 @@ public class UserServiceImpl implements UserService {
             friendMessage.setId(req.getUid());
             friendMessage.setUsername(mine.getUsername());
             friendMessage.setAvatar(mine.getAvatar());
-            friendMessage.setType("friend");
+            friendMessage.setType(IMP.FRIEND.getName());
             friendMessage.setSign(mine.getSign());
-            friendMessage.setGroupid(req.getGroup());
-            messageData.setType("confirmAddFriend");
+            friendMessage.setGroupid(req.getFromGroup());
+            messageData.setType(IMP.CONFIRM_ADD_FRIEND.getName());
             messageData.setData(friendMessage);
             log.info("send add friend ws req:{}", messageData);
             WsServer.getInstance().sendMessage(channel, messageData);
@@ -481,20 +504,20 @@ public class UserServiceImpl implements UserService {
         Integer count = messageBoxMapper.selectCount(boxLambdaQueryWrapper);
         if (count == 0) {
             // 新增系统消息
-            insertMessage(req.getUid(), req.getFriend(), req.getFromGroup(), null, 2, 2);
+            insertMessage(req.getFriend(), req.getUid(), null, null, 2, 2);
         }
 
         // 更新该消息状态
         MessageBox messageBox = new MessageBox();
         messageBox.setId(req.getMessageId());
         messageBox.setStatus(2);
-        messageBox.setReadTime(LocalDateTime.now());
+        messageBox.setReadTime(DateUtil.getNow());
         messageBoxMapper.updateById(messageBox);
 
         // 是否已添加过好友
         LambdaQueryWrapper<UserFriends> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UserFriends::getUserId, req.getUid())
-                    .eq(UserFriends::getFriendId, req.getFriend());
+                .eq(UserFriends::getFriendId, req.getFriend());
         Integer selectCount = userFriendsMapper.selectCount(queryWrapper);
         if (selectCount == 0) {
             UserFriends userFriends = new UserFriends();
@@ -517,6 +540,65 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void refuseFriend(RefuseFriendReq req) throws Exception {
+        sendMessageBox(req.getFrom(), IMP.REFUSE_FRIEND);
+        // 新增拒绝添加好友的系统消息
+        insertMessage(req.getFrom(), req.getTo(), null, null, 2, 3);
+
+        MessageBox messageBox = new MessageBox();
+        messageBox.setId(req.getMessageId());
+        messageBox.setStatus(3);
+        messageBox.setReadTime(DateUtil.getNow());
+        messageBoxMapper.updateById(messageBox);
+    }
+
+    @Override
+    public void sendUserStatusMessage(Long userId, String status) throws Exception {
+        // 发送在线消息给好友
+        List<Long> friends = getUserFriends(userId).stream()
+                .map(UserFriends::getFriendId)
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(friends)) {
+            List<Channel> channels = friends.stream().map(CLIENT_MAP::get).collect(Collectors.toList());
+            for (Channel channel : channels) {
+                // 发送好友在线状态
+                WsServer.getInstance().sendMessage(channel, getSetFriendStatusMessageData(userId, status));
+
+                WsServer.getInstance().sendMessage(channel, getSystemMessageData(userId));
+            }
+        }
+    }
+
+    private BaseMessageData<SystemMessage> getSystemMessageData(Long userId) {
+        SystemMessage systemMessage = new SystemMessage();
+        systemMessage.setId(userId);
+        systemMessage.setSystem(true);
+        systemMessage.setType(IMP.FRIEND.getName());
+        systemMessage.setContent("对方已掉线");
+        BaseMessageData<SystemMessage> systemBaseMessageData = new BaseMessageData<>();
+        systemBaseMessageData.setType(IMP.SYSTEM.getName());
+        systemBaseMessageData.setData(systemMessage);
+        return systemBaseMessageData;
+    }
+
+    private BaseMessageData<SetFriendStatusMessage> getSetFriendStatusMessageData(Long userId, String status) {
+        SetFriendStatusMessage message = new SetFriendStatusMessage();
+        message.setId(userId);
+        message.setStatus(status);
+        BaseMessageData<SetFriendStatusMessage> baseMessageData = new BaseMessageData<>();
+        baseMessageData.setData(message);
+        baseMessageData.setType(IMP.SET_FRIEND_STATUS.getName());
+        return baseMessageData;
+    }
+
+    @Override
+    public List<UserFriends> getUserFriends(Long userId) {
+        LambdaQueryWrapper<UserFriends> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserFriends::getUserId, userId);
+        return userFriendsMapper.selectList(queryWrapper);
+    }
+
     private String getUserStatus(Long friend) {
         return (String) redisClient.get(friend.toString());
     }
@@ -527,11 +609,12 @@ public class UserServiceImpl implements UserService {
         resp.setFrom(box.getForm());
         resp.setTo(box.getTo());
         resp.setMsgType(box.getType());
-        resp.setFriendGroupId(box.getFriendGroupId().toString());
+        resp.setFriendGroupId(box.getFriendGroupId());
         resp.setSendTime(box.getSendTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         resp.setRemark(box.getRemark());
         resp.setStatus(box.getStatus());
-        resp.setReadTime(Optional.ofNullable(box.getReadTime()).map(date -> date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).orElse(""));
+        resp.setReadTime(Optional.ofNullable(box.getReadTime()).map(date -> date.format(DateTimeFormatter.ofPattern(
+                "yyyy-MM-dd HH:mm:ss"))).orElse(""));
         resp.setFromInfo(getMine(box.getForm()));
         resp.setToInfo(getMine(box.getTo()));
         return resp;

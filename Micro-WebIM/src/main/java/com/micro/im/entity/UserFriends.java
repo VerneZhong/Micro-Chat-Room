@@ -22,12 +22,12 @@ public class UserFriends extends Model<UserFriends> {
     private Long id;
 
     /**
-     * 账号
+     * 好友账号
      */
     private Long friendId;
 
     /**
-     * 好友账号
+     * 账号
      */
     private Long userId;
 

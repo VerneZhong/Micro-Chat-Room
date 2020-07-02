@@ -17,7 +17,7 @@ public class MsgBoxResp {
     private Long to;
     private Mine toInfo;
     private Integer msgType;
-    private String friendGroupId;
+    private Long friendGroupId;
     private String content;
     private String remark;
     private String sendTime;

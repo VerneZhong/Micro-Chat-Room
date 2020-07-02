@@ -1,16 +1,12 @@
 package com.micro.im.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
-import com.micro.common.code.BusinessCode;
 import com.micro.common.constant.FileType;
-import com.micro.common.constant.ServerConstant;
 import com.micro.common.dto.UserDTO;
 import com.micro.common.response.ResultPageVO;
 import com.micro.common.response.ResultVO;
 import com.micro.common.util.TokenUtil;
 import com.micro.im.configuration.RedisClient;
-import com.micro.im.entity.MessageBox;
 import com.micro.im.entity.User;
 import com.micro.im.req.*;
 import com.micro.im.resp.*;
@@ -227,11 +223,12 @@ public class UserController {
      * @return
      */
     @GetMapping("/modifyStatus.do")
-    public ResultVO modifyStatus(HttpServletRequest request, @RequestParam String status) {
+    public ResultVO modifyStatus(HttpServletRequest request, @RequestParam String status) throws Exception {
         UserDTO dto = getUserDto(request);
         if (dto != null) {
             log.info("修改用户在线状态：{}:{}", dto.getNickname(), status);
             redisClient.set(dto.getId().toString(), status);
+            userService.sendUserStatusMessage(dto.getId(), Objects.equals(status, ONLINE) ? status : OFFLINE);
             return success();
         }
         return fail(PARAM_ERROR);
@@ -368,7 +365,9 @@ public class UserController {
      * @return
      */
     @PostMapping("/refuseFriend.do")
-    public ResultVO refuseFriend() {
+    public ResultVO refuseFriend(RefuseFriendReq req) throws Exception {
+        log.info("拒绝好友申请req：{}", req);
+        userService.refuseFriend(req);
         return success();
     }
 
@@ -396,7 +395,7 @@ public class UserController {
     }
 
     /**
-     * 查看离线消息数量
+     * 查看离线消息盒子数量
      *
      * @param uid
      * @return
@@ -416,7 +415,7 @@ public class UserController {
     @GetMapping("setMessageRead.do")
     public ResultVO setMessageRead(@RequestParam Long uid) {
         log.info("将消息设为已读：{}", uid);
-//        userService.setMessageRead(uid);
+        userService.setMessageRead(uid);
         return success();
     }
 

@@ -141,6 +141,7 @@ public class WsServer {
      * @param <T>
      */
     public  <T> void sendMessage(Channel channel, BaseMessageData<T> messageData) {
+        log.info("send ws client:{}, message:{}", channel, messageData);
         channelGroup.writeAndFlush(new TextWebSocketFrame(messageData.toString()), target -> channel == target);
     }
 

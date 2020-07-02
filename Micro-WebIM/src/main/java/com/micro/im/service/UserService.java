@@ -3,6 +3,7 @@ package com.micro.im.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.micro.im.entity.MessageBox;
 import com.micro.im.entity.User;
+import com.micro.im.entity.UserFriends;
 import com.micro.im.req.*;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
@@ -119,4 +120,24 @@ public interface UserService {
      * @param req
      */
     void confirmAddFriend(ConfirmAddFriendReq req) throws Exception;
+
+    /**
+     * 拒绝好友添加
+     * @param req
+     */
+    void refuseFriend(RefuseFriendReq req) throws Exception;
+
+    /**
+     * 发送给好友，在线状态
+     * @param userId
+     * @param status
+     */
+    void sendUserStatusMessage(Long userId, String status) throws Exception;
+
+    /**
+     * 获取好友列表
+     * @param userId
+     * @return
+     */
+    List<UserFriends> getUserFriends(Long userId);
 }

@@ -37,7 +37,27 @@ public enum IMP {
     /**
      * 群聊消息类型
      */
-    GROUP("group");
+    GROUP("group"),
+
+    /**
+     * 添加好友
+     */
+    ADD_FRIEND("addFriend"),
+
+    /**
+     * 同意添加好友
+     */
+    CONFIRM_ADD_FRIEND("confirmAddFriend"),
+
+    /**
+     * 拒绝好友添加
+     */
+    REFUSE_FRIEND("refuseFriend"),
+
+    /**
+     * 设置好友在线状态
+     */
+    SET_FRIEND_STATUS("setFriendStatus");
 
     private String name;
 

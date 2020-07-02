@@ -6,47 +6,13 @@ layui.config({
 });
 var host = 'ws://127.0.0.1:8080/im';
 let token = $.cookie("token");
-// 记录当前时间并转成时间戳
-// const now = new Date().getTime();
-// // 从缓存中获取用户上次退出的时间戳
-// const leaveTime = parseInt(localStorage.getItem('leaveTime'), 10);
-// // 判断是否为刷新，两次间隔在5s内判定为刷新操作
-// const refresh = (now - leaveTime) <= 5000;
+var socket;
+//避免重复连接
+var lockReconnect = false;
 layui.use(['layim', 'jquery'], function (layim) {
     let $ = layui.jquery;
-    var socket = new WebSocket(host);
-    //基础配置
-    layim.config({
-        init: {
-            url: 'getList.do?token=' + token
-        }
-        //获取群员接口（返回的数据格式见下文）
-        , members: {
-            url: 'getMembers.do'
-            , type: 'get'
-            , data: {} //额外参数
-        }
-        //上传图片接口
-        , uploadImage: {
-            url: 'uploadImg.do' //接口地址
-            , type: 'post' //默认post
-        }
-        //上传文件接口
-        , uploadFile: {
-            url: 'uploadFile.do' //接口地址
-            , type: 'post' //默认post
-        }
-        //消息盒子页面地址
-        , msgbox: 'msgbox'
-        //发现页面地址
-        , find: 'find'
-        //聊天记录页面地址
-        , chatLog: 'chatlog'
-        , isAudio: true //开启聊天工具栏音频
-        , isVideo: true //开启聊天工具栏视频
-        , notice: true //是否开启桌面消息提醒，默认false
-        , voice: 'default.mp3'
-    });
+
+    createWebSocket(host);
 
     // 获取基础信息
     layim.on('ready', function (options) {
@@ -54,22 +20,41 @@ layui.use(['layim', 'jquery'], function (layim) {
         window.localStorage.setItem("mine", JSON.stringify(options));
         // 查看消息盒子离线消息
         msgBox(options.mine.id);
-
-        // 加载成功时触发
-        socket.onopen = function () {
-            console.log('连接服务器成功！');
-            login(options.mine.id);
-        };
     });
 
-    // ws open send login event
-    function login(id) {
-        let cache = JSON.parse(window.localStorage.getItem("mine"));
-        let uid =  id ? id : cache.mine.id;
-        socket.send(JSON.stringify({
-            type: "login",
-            data: uid
-        }));
+    function initLayIM() {
+        //基础配置
+        layim.config({
+            init: {
+                url: 'getList.do?token=' + token
+            }
+            //获取群员接口（返回的数据格式见下文）
+            , members: {
+                url: 'getMembers.do'
+                , type: 'get'
+                , data: {} //额外参数
+            }
+            //上传图片接口
+            , uploadImage: {
+                url: 'uploadImg.do' //接口地址
+                , type: 'post' //默认post
+            }
+            //上传文件接口
+            , uploadFile: {
+                url: 'uploadFile.do' //接口地址
+                , type: 'post' //默认post
+            }
+            //消息盒子页面地址
+            , msgbox: 'msgbox'
+            //发现页面地址
+            , find: 'find'
+            //聊天记录页面地址
+            , chatLog: 'chatlog'
+            , isAudio: true //开启聊天工具栏音频
+            , isVideo: true //开启聊天工具栏视频
+            , notice: true //是否开启桌面消息提醒，默认false
+            , voice: 'default.mp3'
+        });
     }
 
     function msgBox(uid) {
@@ -89,19 +74,6 @@ layui.use(['layim', 'jquery'], function (layim) {
         });
     }
 
-    // 连接成功时触发
-    socket.onopen = function () {
-        console.log('连接服务器成功！');
-        login(null);
-    };
-
-    // 关闭连接
-    socket.onclose = function () {
-        console.log('服务器关闭！');
-        // 是否重连
-        socket = new WebSocket(host);
-    };
-
     // 监听在线状态切换
     layim.on('online', function (status) {
         $.ajax({
@@ -112,7 +84,8 @@ layui.use(['layim', 'jquery'], function (layim) {
             },
             url: "modifyStatus.do?status=" + status,
             contentType: "application/json",
-            success: function (data) {}
+            success: function (data) {
+            }
         });
     });
 
@@ -127,7 +100,8 @@ layui.use(['layim', 'jquery'], function (layim) {
             url: "modifySign.do",
             data: JSON.stringify({sign: sign}),
             contentType: "application/json",
-            success: function (data) {}
+            success: function (data) {
+            }
         });
     });
 
@@ -146,22 +120,96 @@ layui.use(['layim', 'jquery'], function (layim) {
     });
 
     // 接收消息
-    socket.onmessage = function (res) {
+    function receivedMessage (res) {
         let data = JSON.parse(res.data);
         console.log(data);
         let emit = data.type;
+        let obj = data.data;
         if (emit === 'chat') {
-            layim.getMessage(data.data);
+            layim.getMessage(obj);
         } else if (emit === 'system') {
-            layim.getMessage(data.data);
-        } else if (emit === 'addFriend') {
+            layim.getMessage(obj);
+        } else if (emit === 'addFriend' || emit === 'refuseFriend') {
             // 刷新消息盒子数量
-            msgBox(data.data);
+            msgBox(obj);
         } else if (emit === 'confirmAddFriend') {
             // 确认添加好友
-            layim.addList(JSON.parse(data.data));
+            layim.addList(obj);
+        } else if (emit === 'setFriendStatus') {
+            // 监听好友是否在线
+            layim.setFriendStatus(obj.id, obj.status);
         }
-    };
+    }
+
+    function reconnect(url) {
+        console.log("重连服务器");
+        if(lockReconnect) return;
+        lockReconnect = true;
+        //没连接上会一直重连，设置延迟避免请求过多
+        setTimeout(function () {
+            createWebSocket(url);
+            lockReconnect = false;
+        }, 2000);
+    }
+
+    function createWebSocket(url) {
+        try {
+            socket = new WebSocket(url);
+            initEventHandle();
+        } catch (e) {
+            reconnect(url);
+        }
+    }
+
+    function initEventHandle() {
+        socket.onclose = function () {
+            console.log("服务器关闭");
+            reconnect(host);
+        };
+        socket.onerror = function () {
+            console.log("服务器错误");
+            reconnect(host);
+        };
+        socket.onopen = function () {
+            console.log('连接服务器成功！');
+            socket.send(JSON.stringify({
+                type: "login",
+                data: token
+            }));
+            initLayIM();
+            //心跳检测重置
+            heartCheck.reset().start();
+        };
+        socket.onmessage = function (event) {
+            heartCheck.reset().start();
+            //如果获取到消息，心跳检测重置
+            //拿到任何消息都说明当前连接是正常的
+            receivedMessage(event);
+        }
+    }
+
+    //心跳检测
+    var heartCheck = {
+        timeout: 60000,//60秒
+        timeoutObj: null,
+        serverTimeoutObj: null,
+        reset: function(){
+            clearTimeout(this.timeoutObj);
+            clearTimeout(this.serverTimeoutObj);
+            return this;
+        },
+        start: function(){
+            var self = this;
+            this.timeoutObj = setTimeout(function(){
+                //这里发送一个心跳，后端收到后，返回一个心跳消息，
+                //onmessage拿到返回的心跳就说明连接正常
+                socket.send("HeartBeat");
+                self.serverTimeoutObj = setTimeout(function(){//如果超过一定时间还没重置，说明后端主动断开了
+                    socket.close();//如果onclose会执行reconnect，我们执行ws.close()就行了.如果直接执行reconnect 会触发onclose导致重连两次
+                }, self.timeout)
+            }, this.timeout)
+        }
+    }
 
     // 监听查看群成员
     // 在群聊面板中查看全部成员时触发，返回获取群员列表的resp信息
@@ -215,40 +263,5 @@ layui.use(['layim', 'jquery'], function (layim) {
     //     }
     // });
 
-});
-
-$(function () {
-    // window.onunload = function (e) {
-        // 将退出时间存于localstorage中
-        // localStorage.setItem('leaveTime', new Date().getTime());
-        // layer.open({
-        //     content: '确定离开聊天室吗？',
-        //     yes: function (index, layero) {
-        //         layer.close(index);
-        //     },
-        //     cancel: function (index, layero) {
-        //         if (confirm('确定离开聊天室吗？')) { //只有当点击confirm框的确定时，该层才会关闭
-        //             layer.close(index)
-        //             $.ajax({
-        //                 type: "get",
-        //                 headers: {      //请求头
-        //                     Accept: "application/json; charset=utf-8",
-        //                     token: token
-        //                 },
-        //                 url: "logout.do",
-        //                 contentType: "application/json",
-        //                 success: function (res) {
-        //                     // clean cookie or db
-        //                     if (res.code === 0) {
-        //                         window.localStorage.removeItem("mine");
-        //                         $.cookie('token', null);
-        //                     }
-        //                 }
-        //             });
-        //         }
-        //         return false;
-        //     }
-        // });
-    // }
 });
 
