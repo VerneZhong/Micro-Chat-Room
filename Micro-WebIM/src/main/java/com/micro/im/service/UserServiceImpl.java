@@ -599,6 +599,23 @@ public class UserServiceImpl implements UserService {
         return userFriendsMapper.selectList(queryWrapper);
     }
 
+    @Override
+    public UserFriendsGroup addMyGroup(AddMyGroupReq req) {
+        UserFriendsGroup friendsGroup = new UserFriendsGroup();
+        friendsGroup.setName(req.getGroupName());
+        friendsGroup.setUserId(req.getUserId());
+        userFriendsGroupMapper.insert(friendsGroup);
+        return friendsGroup;
+    }
+
+    @Override
+    public void editGroupName(EditGroupNameReq req) {
+        UserFriendsGroup friendsGroup = new UserFriendsGroup();
+        friendsGroup.setId(req.getGroupId());
+        friendsGroup.setName(req.getGroupName());
+        userFriendsGroupMapper.updateById(friendsGroup);
+    }
+
     private String getUserStatus(Long friend) {
         return (String) redisClient.get(friend.toString());
     }

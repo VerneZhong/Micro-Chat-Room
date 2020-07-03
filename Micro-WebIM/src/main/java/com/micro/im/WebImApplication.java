@@ -1,6 +1,5 @@
 package com.micro.im;
 
-import com.micro.common.constant.ServerConstant;
 import com.micro.im.ws.WsServer;
 import com.micro.thrift.user.UserThriftService;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +12,6 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;

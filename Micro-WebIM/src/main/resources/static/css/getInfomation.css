@@ -1,0 +1,59 @@
+/**
+ *  get info css
+ * @author Mr.zxb
+ * @date 2020-07-03 10:37
+ */
+.layim-msgbox{margin: 15px;}
+.layim-msgbox li{position: relative; margin-bottom: 10px; padding: 0 110px 10px 60px; padding-bottom: 10px; line-height: 22px; border-bottom: 1px dotted #e2e2e2;width: 200px;}
+.layim-msgbox .layim-msgbox-tips{margin: 0; padding: 10px 0; border: none; text-align: center; color: #999;}
+.layim-msgbox .layim-msgbox-system{padding: 0 10px 10px 10px;}
+.layim-msgbox li p span{padding-left: 5px; color: #999;}
+.layim-msgbox li p em{font-style: normal; color: #FF5722;}
+.layim-msgbox-avatar{position: absolute; left: 0; top: 0; width: 50px; height: 50px;}
+.layim-msgbox-user{padding-top: 5px;}
+.layim-msgbox-content{margin-top: 3px;}
+.layim-msgbox .layui-btn-small{padding: 0 15px; margin-left: 5px;}
+.layim-msgbox-btn{position: absolute; right: 0; top: 12px; color: #999;}
+.pt15{padding-top: 15px;}
+.pt10{padding-top: 10px;}
+.pt30{padding-top: 30px;}
+.pd0{padding: 0px;}
+.chat{
+    float: right;
+    margin-top: -45px;
+    margin-right: -110px;
+    z-index: 999999;
+}
+.label{
+    float: left;
+    display: block;
+    padding: 9px 5px 9px 20px;
+    width: 40px;
+    font-weight: 400;
+    text-align: right;
+}
+.label_key{
+    float: left;
+    display: block;
+    padding: 9px 5px;
+    font-weight: 400;
+}
+.block {
+    margin-left: 55px;
+    min-height: 36px;
+}
+.layui-input, .layui-textarea {
+    display: block;
+    width: 90%;
+    padding-left: 10px;
+}
+.noresize{
+    resize:none;
+}
+.select{
+    height: 38px;
+    line-height: 38px;
+    border: 1px solid #e6e6e6;
+    background-color: #fff;
+    border-radius: 2px;
+}

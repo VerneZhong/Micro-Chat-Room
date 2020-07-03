@@ -8,6 +8,7 @@ import com.micro.common.response.ResultVO;
 import com.micro.common.util.TokenUtil;
 import com.micro.im.configuration.RedisClient;
 import com.micro.im.entity.User;
+import com.micro.im.entity.UserFriendsGroup;
 import com.micro.im.req.*;
 import com.micro.im.resp.*;
 import com.micro.im.service.FileService;
@@ -419,5 +420,25 @@ public class UserController {
         return success();
     }
 
+    /**
+     * 添加好友分组
+     * @param req
+     * @return
+     */
+    @PostMapping("addMyGroup.do")
+    public ResultVO<UserFriendsGroup> addMyGroup(@RequestBody AddMyGroupReq req) {
+        log.info("新增好友分组：{}", req);
+        return success(userService.addMyGroup(req));
+    }
 
+    /**
+     * 编辑分组名称
+     * @return
+     */
+    @PostMapping("editGroupName.do")
+    public ResultVO editGroupName(@RequestBody EditGroupNameReq req) {
+        log.info("修改好友分组：{}", req);
+        userService.editGroupName(req);
+        return success();
+    }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.micro.im.entity.MessageBox;
 import com.micro.im.entity.User;
 import com.micro.im.entity.UserFriends;
+import com.micro.im.entity.UserFriendsGroup;
 import com.micro.im.req.*;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
@@ -140,4 +141,18 @@ public interface UserService {
      * @return
      */
     List<UserFriends> getUserFriends(Long userId);
+
+    /**
+     * 添加我的好友分组
+     * @param req
+     * @return
+     */
+    UserFriendsGroup addMyGroup(AddMyGroupReq req);
+
+    /**
+     * 编辑分组名称
+     * @param req
+     * @return
+     */
+    void editGroupName(EditGroupNameReq req);
 }

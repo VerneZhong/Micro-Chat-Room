@@ -15,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -41,8 +42,7 @@ public class UserThriftServiceImpl implements UserThriftService.Iface {
     public long getUserIdByToken(String token) throws TException {
         log.info("通过token：{} 获取用户ID信息", token);
         UserDTO userDTO = (UserDTO) redisClient.get(token);
-        Objects.requireNonNull(userDTO);
-        return userDTO.getId();
+        return Optional.ofNullable(userDTO).map(UserDTO::getId).orElse(0L);
     }
 
     @Override

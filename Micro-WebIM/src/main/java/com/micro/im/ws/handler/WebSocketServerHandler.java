@@ -71,13 +71,15 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                     if (optional.isPresent()) {
                         String token = optional.get();
                         long userId = getUserIdByToken(token);
-                        ctx.channel().attr(USER_ID_KEY).getAndSet(userId);
-                        // 设置好友在线状态
-                        setUserStatus(userId, ONLINE);
-                        if (channelGroup.find(ctx.channel().id()) == null) {
-                            channelGroup.add(ctx.channel());
+                        if (userId > 0) {
+                            ctx.channel().attr(USER_ID_KEY).getAndSet(userId);
+                            // 设置好友在线状态
+                            setUserStatus(userId, ONLINE);
+                            if (channelGroup.find(ctx.channel().id()) == null) {
+                                channelGroup.add(ctx.channel());
+                            }
+                            channelMap.putIfAbsent(userId, ctx.channel());
                         }
-                        channelMap.putIfAbsent(userId, ctx.channel());
                     }
                     break;
                 case "chat":
@@ -91,6 +93,9 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                     break;
                 case "groupMessage":
 
+                    break;
+                case "heartBeat" :
+                    ctx.channel().writeAndFlush(new TextWebSocketFrame("{\"type\":\"heartBeat\",\"data\":\"pong\"}"));
                     break;
                 default:
                     break;
