@@ -9,6 +9,7 @@ import com.micro.im.req.*;
 import com.micro.im.resp.GetListResp;
 import com.micro.im.resp.GetMembersResp;
 import com.micro.im.resp.MsgBoxResp;
+import com.micro.im.vo.Mine;
 
 import java.util.List;
 
@@ -83,12 +84,6 @@ public interface UserService {
     void sendAddFriendReq(AddFriendReq addFriendReq) throws Exception;
 
     /**
-     * 添加好友分组
-     * @param req
-     */
-    void addFriendGroup(AddFriendGroupReq req);
-
-    /**
      * 好友分组是否存在
      * @param userId
      * @param name
@@ -155,4 +150,40 @@ public interface UserService {
      * @return
      */
     void editGroupName(EditGroupNameReq req);
+
+    /**
+     * 删除好友分组
+     * @param id
+     */
+    void deleteFriendGroup(Long id);
+
+    /**
+     * 获取默认好友分组id
+     * @param userId
+     * @return
+     */
+    Long getDefaultFriendGroup(Long userId);
+
+    /**
+     * 获取用户信息
+     * @param userId
+     * @return
+     */
+    Mine getMine(Long userId);
+
+    /**
+     * 移动好友至新分组
+     * @param userId
+     * @param to
+     * @param from
+     */
+    void moveFriendGroup(Long userId, Long to, Long from);
+
+    /**
+     * 修改好友备注
+     * @param userId
+     * @param friendId
+     * @param nickName
+     */
+    void editFriendRemark(Long userId, Long friendId, String nickName);
 }

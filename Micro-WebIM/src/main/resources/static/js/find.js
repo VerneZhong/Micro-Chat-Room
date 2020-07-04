@@ -71,7 +71,6 @@ layui.use(['layim', 'laypage', 'form', 'socket'], function () {
                 }
             }
         }
-        debugger;
         //弹出添加好友对话框
         layim.add({
             isAdd: isAdd

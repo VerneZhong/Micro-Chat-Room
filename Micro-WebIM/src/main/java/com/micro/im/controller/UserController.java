@@ -14,6 +14,7 @@ import com.micro.im.resp.*;
 import com.micro.im.service.FileService;
 import com.micro.im.service.MessageService;
 import com.micro.im.service.UserService;
+import com.micro.im.vo.Mine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -321,22 +322,6 @@ public class UserController {
     }
 
     /**
-     * 添加好友分组
-     *
-     * @return
-     */
-    @PostMapping("/addFriendGroup.do")
-    public ResultVO addFriendGroup(@RequestBody AddFriendGroupReq req) {
-        log.info("添加好友分组请求req: {}", req);
-        boolean groupExists = userService.friendGroupExists(req.getUserId(), req.getFriendGroupName());
-        if (groupExists) {
-            return fail(FRIEND_GROUP_EXISTS);
-        }
-        userService.addFriendGroup(req);
-        return success();
-    }
-
-    /**
      * 发送添加好友申请请求
      *
      * @param
@@ -441,4 +426,33 @@ public class UserController {
         userService.editGroupName(req);
         return success();
     }
+
+    /**
+     * 删除分组
+     * @return
+     */
+    @GetMapping("delMyGroup.do")
+    public ResultVO<Long> delMyGroup(@RequestParam Long id, @RequestParam Long userId) {
+        log.info("删除好友分组：{}", id);
+        userService.deleteFriendGroup(id);
+        return success(userService.getDefaultFriendGroup(userId));
+    }
+
+    @GetMapping("moveFriendGroup.do")
+    public ResultVO<Mine> moveFriendGroup(@RequestParam Long userId,
+                                          @RequestParam Long friendId,
+                                          @RequestParam Long groupId,
+                                          @RequestParam Long old) {
+        userService.moveFriendGroup(userId, groupId, old);
+        return success(userService.getMine(friendId));
+    }
+
+    @GetMapping("editFriendRemark.do")
+    public ResultVO editFriendRemark(@RequestParam Long userId,
+                                     @RequestParam String nickName,
+                                     @RequestParam Long friendId) {
+        userService.editFriendRemark(userId, friendId, nickName);
+        return success();
+    }
+
 }

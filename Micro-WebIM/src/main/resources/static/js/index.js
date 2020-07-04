@@ -54,6 +54,7 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
                 url: 'uploadFile.do' //接口地址
                 , type: 'post' //默认post
             }
+            , title: "WebIM"
             //消息盒子页面地址
             , msgbox: 'msgbox'
             //发现页面地址
@@ -76,7 +77,7 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
             var data = {
                 contextItem: "context-friend", // 添加class
                 target: function (ele) { // 当前元素
-                    $(".context-friend").attr("data-id", ele[0].id.replace(/[^0-9]/ig, "")).attr("data-name", ele.find("span").html());
+                    $(".context-friend").attr("data-id", ele.data('id')).attr("data-name", ele.find("span").html());
                     $(".context-friend").attr("data-img", ele.find("img").attr('src')).attr("data-type", 'friend');
                 },
                 menu: []
@@ -85,11 +86,11 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
             data.menu.push(menuInfo());
             data.menu.push(menuChatLog());
             data.menu.push(menuNickName());
-            var currentGroupidx = $(this).find('h5').data('groupidx');//当前分组id
+            var currentGroupidx = $(this).find('h5').data('id');//当前分组id
             if (my_spread.length >= 2) { //当至少有两个分组时
                 var html = '<ul>';
                 for (var i = 0; i < my_spread.length; i++) {
-                    var groupidx = my_spread.eq(i).find('h5').data('groupidx');
+                    var groupidx = my_spread.eq(i).find('h5').data('id');
                     if (currentGroupidx != groupidx) {
                         var groupName = my_spread.eq(i).find('h5 span').html();
                         html += '<li class="ui-move-menu-item" data-groupidx="' + groupidx + '" data-groupName="' + groupName + '"><a href="javascript:void(0);"><span>' + groupName + '</span></a></li>'
@@ -103,12 +104,12 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
             $(".layim-list-friend >li > ul > li").contextMenu(data);//好友右键事件
         });
 
+        //好友分组右键事件
         $(".layim-list-friend >li > h5").mousedown(function (e) {
             var data = {
                 contextItem: "context-mygroup", // 添加class
                 target: function (ele) { // 当前元素
-                    console.log(ele);
-                    $(".context-mygroup").attr("data-id", ele.data('groupidx')).attr("data-name", ele.find("span").html());
+                    $(".context-mygroup").attr("data-id", ele.data('id')).attr("data-name", ele.find("span").html());
                 },
                 menu: []
             };
@@ -117,8 +118,7 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
             if ($(this).parent().find('ul li').data('index') !== 0) {
                 data.menu.push(menuDelMyGroup());
             }
-
-            $(this).contextMenu(data);  //好友分组右键事件
+            $(this).contextMenu(data);
         });
 
         $(".layim-list-group > li").mousedown(function (e) {
@@ -222,7 +222,6 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
                 var othis = ele.parent(), type = othis.data('type'),
                     name = othis.data('name'), avatar = othis.data('img'),
                     id = othis.data('id');
-                // id = (new RegExp(substr).test('layim')?substr.replace(/[^0-9]/ig,""):substr);
                 layim.chat({
                     name: name
                     , type: type
@@ -328,13 +327,15 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
             callback: function (ele) {
                 var othis = ele.parent(), friend_id = othis.data('id'), friend_name = othis.data('name');
                 layer.prompt({title: '修改备注姓名', formType: 0, value: friend_name}, function (nickName, index) {
-                    $.get('class/doAction.php?action=editNickName', {
+                    $.get('editFriendRemark.do', {
+                        userId: cachedata.mine.id,
                         nickName: nickName,
-                        friend_id: friend_id
+                        friendId: friend_id
                     }, function (data) {
                         if (data.code === 0) {
-                            var friendName = $("#layim-friend" + friend_id).find('span');
-                            friendName.html(data.data);
+                            // var friendName = $("#layim-friend" + friend_id).find('span');
+                            // friendName.html(nickName);
+                            location.reload();
                             layer.close(index);
                         }
                         layer.msg(data.msg);
@@ -354,15 +355,14 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
             navBody: html,//子导航html
             callback: function (ele) {
                 var friend_id = ele.parent().data('id');//要移动的好友id
-                friend_name = ele.parent().data('name');
-                var avatar = '../uploads/person/' + friend_id + '.jpg';
-                var default_avatar = './uploads/person/empty2.jpg';
+                var friend_name = ele.parent().data('name');
+                var avatar = '';
                 var signature = $('.layim-list-friend').find('#layim-friend' + friend_id).find('p').html();//获取签名
                 var item = ele.find("ul li");
                 item.hover(function () {
                     var _this = item.index(this);
-                    var groupidx = item.eq(_this).data('groupidx');//将好友移动到分组的id
-                    $.get('class/doAction.php?action=moveFriend', {
+                    var groupidx = item.eq(_this).data('id');//将好友移动到分组的id
+                    $.get('moveFriend.do', {
                         friend_id: friend_id,
                         groupidx: groupidx
                     }, function (data) {
@@ -373,7 +373,7 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
                             });
                             layim.addList({//将好友移动到新分组
                                 type: 'friend'
-                                , avatar: im['IsExist'].call(this, avatar) ? avatar : default_avatar //好友头像
+                                , avatar: avatar //好友头像
                                 , username: friend_name //好友昵称
                                 , groupid: groupidx //所在的分组id
                                 , id: friend_id //好友ID
@@ -479,23 +479,22 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
             icon: "&#xe642;",
             callback: function (ele) {
                 var othis = ele.parent(), mygroupIdx = othis.data('id'), groupName = othis.data('name');
-                debugger;
                 layer.prompt({title: '请输入分组名，并确认', formType: 0, value: groupName}, function (mygroupName, index) {
                     if (mygroupName) {
                         $.ajax({
                             url: 'editGroupName.do',
-                            type:"POST",
+                            type: "POST",
                             data: JSON.stringify({
                                 groupName: mygroupName,
                                 groupId: mygroupIdx
                             }),
-                            contentType:"application/json; charset=utf-8",
-                            dataType:"json",
-                            success: function(data) {
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: function (data) {
                                 if (data.code === 0) {
                                     var friend_group = $(".layim-list-friend li");
                                     for (var j = 0; j < friend_group.length; j++) {
-                                        var groupIdx = friend_group.eq(j).find('h5').data('groupidx');
+                                        var groupIdx = friend_group.eq(j).find('h5').data('id');
                                         if (groupIdx == mygroupIdx) {//当前选择的分组
                                             friend_group.eq(j).find('h5').find('span').html(mygroupName);
                                         }
@@ -537,14 +536,14 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
         layer.prompt({title: '新增分组', formType: 0, value: '', maxlength: 10}, function (name, index) {
             $.ajax({
                 url: 'addMyGroup.do',
-                type:"POST",
+                type: "POST",
                 data: JSON.stringify({
-                    userId : cachedata.mine.id,
-                    groupName : name
+                    userId: cachedata.mine.id,
+                    groupName: name
                 }),
-                contentType:"application/json; charset=utf-8",
-                dataType:"json",
-                success: function(data) {
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
                     if (data.code === 0) {
                         $('.layim-list-friend').append('<li><h5 layim-event="spread" lay-type="false" data-id="' + data.data.id + '"><i class="layui-icon">&#xe602;</i><span>' + data.data.name + '</span><em>(<cite class="layim-count"> 0</cite>)</em></h5><ul class="layui-layim-list"><span class="layim-null">该分组下暂无好友</span></ul></li>');
                         contextMenu();
@@ -558,11 +557,11 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
     }
 
     var delMyGroup = function (groupidx) {//删除分组
-        $.get('class/doAction.php?action=delMyGroup', {mygroupIdx: groupidx}, function (data) {
-            if (data.code == 0) {
+        $.get('delMyGroup.do', {id: groupidx, userId: cachedata.mine.id}, function (data) {
+            if (data.code === 0) {
                 var group = $('.layim-list-friend li') || [];
                 for (var j = 0; j < group.length; j++) {//遍历每一个分组
-                    groupList = group.eq(j).find('h5').data('groupidx');
+                    groupList = group.eq(j).find('h5').data('id');
                     if (groupList === groupidx) {//要删除的分组
                         if (group.eq(j).find('ul span').hasClass('layim-null')) {//删除的分组下没有好友
                             group.eq(j).remove();
@@ -570,31 +569,43 @@ layui.use(['layim', 'contextMenu', 'jquery'], function (layim) {
                             // var html = group.eq(j).find('ul').html();//被删除分组的好友
                             var friend = group.eq(j).find('ul li');
                             var number = friend.length;//被删除分组的好友个数
-                            for (var i = 0; i < number; i++) {
-                                var friend_id = friend.eq(i).attr('id').replace(/^layim-friend/g, '');//好友id
-                                var friend_name = friend.eq(i).find('span').html();//好友id
-                                var signature = friend.eq(i).find('p').html();//好友id
-                                var avatar = '../uploads/person/' + friend_id + '.jpg';
-                                var default_avatar = './uploads/person/empty2.jpg';
-                                conf.layim.removeList({//将好友从之前分组除去
-                                    type: 'friend'
-                                    , id: friend_id //好友ID
-                                });
-                                conf.layim.addList({//将好友移动到新分组
-                                    type: 'friend'
-                                    , avatar: im['IsExist'].call(this, avatar) ? avatar : default_avatar //好友头像
-                                    , username: friend_name //好友昵称
-                                    , groupid: data.data //将好友添加到默认分组
-                                    , id: friend_id //好友ID
-                                    , sign: signature //好友签名
-                                });
+                            for (let i = 0; i < number; i++) {
+                                let classNames = friend[i].className.split(" ");
+                                let name;
+                                for (let className of classNames) {
+                                    if (className.startsWith('layim-friend')) {
+                                        name = className;
+                                        break;
+                                    }
+                                }
+                                if (name) {
+                                    //好友id
+                                    var friend_id = name.replace(/^layim-friend/g, '');
+                                    $.get('moveFriendGroup.do', {userId: cachedata.mine.id, friendId: friend_id, groupId: data.data, old: groupidx}, function (res) {
+                                        let friend = res.data;
+                                        var friend_name = friend.username;//好友昵称
+                                        var signature = friend.sign;//好友签名
+                                        var avatar = friend.avatar;
+                                        layim.removeList({//将好友从之前分组除去
+                                            type: 'friend'
+                                            , id: friend_id //好友ID
+                                        });
+                                        layim.addList({//将好友移动到新分组
+                                            type: 'friend'
+                                            , avatar: avatar //好友头像
+                                            , username: friend_name //好友昵称
+                                            , groupid: data.data //将好友添加到默认分组
+                                            , id: friend_id //好友ID
+                                            , sign: signature //好友签名
+                                        });
+                                    });
+                                }
                             }
-                            ;
                         }
-
                     }
                 }
                 contextMenu();
+                location.reload();
                 layer.close(layer.index);
             } else {
                 layer.msg(data.msg);

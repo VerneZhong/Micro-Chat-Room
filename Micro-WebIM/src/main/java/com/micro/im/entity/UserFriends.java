@@ -36,6 +36,11 @@ public class UserFriends extends Model<UserFriends> {
      */
     private Long groupId;
 
+    /**
+     * 好友备注
+     */
+    private String remark;
+
     public Long getId() {
         return id;
     }
@@ -66,6 +71,14 @@ public class UserFriends extends Model<UserFriends> {
 
     public void setGroupId(Long groupId) {
         this.groupId = groupId;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     @Override

@@ -141,7 +141,8 @@ public class UserServiceImpl implements UserService {
         return resp;
     }
 
-    private Mine getMine(Long userId) {
+    @Override
+    public Mine getMine(Long userId) {
         Mine mine = new Mine();
         User user = userMapper.selectById(userId);
         mine.setId(String.valueOf(userId));
@@ -151,6 +152,31 @@ public class UserServiceImpl implements UserService {
         mine.setAvatar(user.getAvatarAddress());
         mine.setSign(user.getSign());
         return mine;
+    }
+
+    @Override
+    public void moveFriendGroup(Long userId, Long to, Long from) {
+        UserFriends userFriends = new UserFriends();
+        userFriends.setUserId(userId);
+        userFriends.setGroupId(to);
+
+        LambdaQueryWrapper<UserFriends> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserFriends::getUserId, userId)
+                .eq(UserFriends::getGroupId, from);
+        userFriendsMapper.update(userFriends, queryWrapper);
+    }
+
+    @Override
+    public void editFriendRemark(Long userId, Long friendId, String nickName) {
+        UserFriends userFriends = new UserFriends();
+        userFriends.setUserId(userId);
+        userFriends.setRemark(nickName);
+        userFriends.setFriendId(friendId);
+
+        LambdaQueryWrapper<UserFriends> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserFriends::getUserId, userId)
+                .eq(UserFriends::getFriendId, friendId);
+        userFriendsMapper.update(userFriends, queryWrapper);
     }
 
     private GroupVO transformGroupVO(Group group) {
@@ -177,11 +203,17 @@ public class UserServiceImpl implements UserService {
                 .map(UserFriends::getFriendId)
                 .collect(Collectors.toList());
 
+        HashMap<Long, UserFriends> friendsHashMap = Maps.newHashMap();
+        userFriends.forEach(friend -> {
+            friendsHashMap.put(friend.getFriendId(), friend);
+        });
+
         List<FriendVO> friendVOS = Lists.newArrayList();
         for (Long friendId : friendsList) {
             List<User> users = userListMap.get(friendId);
+            UserFriends friends = friendsHashMap.get(friendId);
             List<FriendVO> friendVOList = users.stream()
-                    .map(friend -> getFriendVO(friend))
+                    .map(friend -> getFriendVO(friend, friends))
                     .collect(Collectors.toList());
             friendVOS.addAll(friendVOList);
         }
@@ -189,11 +221,11 @@ public class UserServiceImpl implements UserService {
         return friendGroup;
     }
 
-    private FriendVO getFriendVO(User friend) {
+    private FriendVO getFriendVO(User friend, UserFriends friends) {
         FriendVO friendVO = new FriendVO();
         String id = friend.getId().toString();
         friendVO.setId(id);
-        friendVO.setUsername(friend.getNickname());
+        friendVO.setUsername(Optional.ofNullable(friends.getRemark()).orElse(friend.getNickname()));
         friendVO.setAvatar(friend.getAvatarAddress());
         friendVO.setSign(friend.getSign());
         String online = (String) redisClient.get(id);
@@ -253,6 +285,7 @@ public class UserServiceImpl implements UserService {
         UserFriendsGroup userFriendsGroup = new UserFriendsGroup();
         userFriendsGroup.setName("我的好友");
         userFriendsGroup.setUserId(user.getId());
+        userFriendsGroup.setType(0);
         userFriendsGroupMapper.insert(userFriendsGroup);
     }
 
@@ -392,19 +425,6 @@ public class UserServiceImpl implements UserService {
 
         log.info("新增消息：{}", message);
         messageBoxMapper.insert(message);
-    }
-
-    /**
-     * 添加好友分组
-     *
-     * @param req
-     */
-    @Override
-    public void addFriendGroup(AddFriendGroupReq req) {
-        UserFriendsGroup friendsGroup = new UserFriendsGroup();
-        friendsGroup.setUserId(req.getUserId());
-        friendsGroup.setName(req.getFriendGroupName());
-        userFriendsGroupMapper.insert(friendsGroup);
     }
 
     /**
@@ -604,6 +624,7 @@ public class UserServiceImpl implements UserService {
         UserFriendsGroup friendsGroup = new UserFriendsGroup();
         friendsGroup.setName(req.getGroupName());
         friendsGroup.setUserId(req.getUserId());
+        friendsGroup.setType(1);
         userFriendsGroupMapper.insert(friendsGroup);
         return friendsGroup;
     }
@@ -614,6 +635,18 @@ public class UserServiceImpl implements UserService {
         friendsGroup.setId(req.getGroupId());
         friendsGroup.setName(req.getGroupName());
         userFriendsGroupMapper.updateById(friendsGroup);
+    }
+
+    @Override
+    public void deleteFriendGroup(Long id) {
+        userFriendsGroupMapper.deleteById(id);
+    }
+
+    @Override
+    public Long getDefaultFriendGroup(Long userId) {
+        LambdaQueryWrapper<UserFriendsGroup> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserFriendsGroup::getUserId, userId).eq(UserFriendsGroup::getType, 0);
+        return userFriendsGroupMapper.selectOne(queryWrapper).getId();
     }
 
     private String getUserStatus(Long friend) {

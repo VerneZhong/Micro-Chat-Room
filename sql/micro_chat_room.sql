@@ -113,4 +113,9 @@ ALTER TABLE `message`
 ALTER TABLE `message`
     MODIFY COLUMN `type`  tinyint(1) NOT NULL COMMENT '消息类型（1为请求添加用户消息）；2为系统消息（添加好友）；3为请求加群消息；4为系统消息（添加群系统消息）；5为全体用户消息' AFTER `id`;
 
+-- 新增
+ALTER TABLE `micro_chat_room`.`user_friends_group`
+ADD COLUMN `type` bigint(1) NOT NULL COMMENT '分组类型（0默认分组，1是自定义分组）' AFTER `user_id`;
 
+ALTER TABLE `micro_chat_room`.`user_friends`
+ADD COLUMN `remark` varchar(255) NULL COMMENT '好友备注' AFTER `group_id`;

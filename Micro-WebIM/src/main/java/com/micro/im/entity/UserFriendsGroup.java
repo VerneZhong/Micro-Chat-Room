@@ -31,6 +31,8 @@ public class UserFriendsGroup extends Model<UserFriendsGroup> {
      */
     private Long userId;
 
+    private Integer type;
+
     public Long getId() {
         return id;
     }
@@ -53,6 +55,14 @@ public class UserFriendsGroup extends Model<UserFriendsGroup> {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     @Override
