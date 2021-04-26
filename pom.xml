@@ -49,7 +49,7 @@
         <mutils.version>0.3.7</mutils.version>
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
-        <common.io.version>2.6</common.io.version>
+        <common.io.version>2.7</common.io.version>
         <thrift.version>0.13.0</thrift.version>
         <micro.common.version>1.0-SNAPSHOT</micro.common.version>
         <micro.thrift.user.version>1.0-SNAPSHOT</micro.thrift.user.version>
