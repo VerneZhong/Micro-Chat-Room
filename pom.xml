@@ -45,7 +45,7 @@
         <beetl.version>2.9.10</beetl.version>
         <javafx.version>13</javafx.version>
         <msgpack.version>0.6.12</msgpack.version>
-        <fastjson.version>1.2.68</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <mutils.version>0.3.7</mutils.version>
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
