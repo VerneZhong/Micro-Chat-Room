@@ -34,7 +34,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <spring.boot.version>2.2.7.RELEASE</spring.boot.version>
         <mybatis.version>3.5.4</mybatis.version>
-        <mysql.version>8.0.20</mysql.version>
+        <mysql.version>8.0.28</mysql.version>
         <netty.version>4.1.50.Final</netty.version>
         <spring.boot.mybatis.version>2.1.2</spring.boot.mybatis.version>
         <lombok.version>1.18.12</lombok.version>
