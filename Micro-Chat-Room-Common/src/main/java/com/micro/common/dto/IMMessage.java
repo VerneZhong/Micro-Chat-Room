@@ -1,6 +1,5 @@
 package com.micro.common.dto;
 
-import lombok.Builder;
 import lombok.Data;
 import org.msgpack.annotation.Message;
 
