@@ -33,8 +33,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <spring.boot.version>2.2.7.RELEASE</spring.boot.version>
-        <mybatis.version>3.5.4</mybatis.version>
-        <mysql.version>8.0.20</mysql.version>
+        <mybatis.version>3.5.19</mybatis.version>
+        <mysql.version>9.2.0</mysql.version>
         <netty.version>4.1.50.Final</netty.version>
         <spring.boot.mybatis.version>2.1.2</spring.boot.mybatis.version>
         <lombok.version>1.18.30</lombok.version>
@@ -42,19 +42,19 @@
         <hikari.version>3.4.5</hikari.version>
         <mybatis.plus.version>3.3.1</mybatis.plus.version>
         <thumbnailator.version>0.4.11</thumbnailator.version>
-        <beetl.version>2.9.10</beetl.version>
+        <beetl.version>3.16.0.RELEASE</beetl.version>
         <javafx.version>13</javafx.version>
         <msgpack.version>0.6.12</msgpack.version>
-        <fastjson.version>1.2.68</fastjson.version>
+        <fastjson.version>2.0.56</fastjson.version>
         <mutils.version>0.3.7</mutils.version>
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
-        <common.io.version>2.6</common.io.version>
+        <common.io.version>2.18.0</common.io.version>
         <thrift.version>0.13.0</thrift.version>
         <micro.common.version>1.0-SNAPSHOT</micro.common.version>
         <micro.thrift.user.version>1.0-SNAPSHOT</micro.thrift.user.version>
-        <protobuf.version>3.12.2</protobuf.version>
-        <guava.version>29.0-jre</guava.version>
+        <protobuf.version>4.29.0</protobuf.version>
+        <guava.version>33.4.0-jre</guava.version>
         <kryo.version>4.0.2</kryo.version>
         <mail.version>1.4.7</mail.version>
     </properties>
@@ -79,8 +79,8 @@
 
             <!-- Mysql 依赖 -->
             <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
                 <version>${mysql.version}</version>
             </dependency>
 
