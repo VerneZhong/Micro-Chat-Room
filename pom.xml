@@ -50,7 +50,7 @@
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
         <common.io.version>2.18.0</common.io.version>
-        <thrift.version>0.13.0</thrift.version>
+        <thrift.version>0.21.0</thrift.version>
         <micro.common.version>1.0-SNAPSHOT</micro.common.version>
         <micro.thrift.user.version>1.0-SNAPSHOT</micro.thrift.user.version>
         <protobuf.version>4.29.0</protobuf.version>
