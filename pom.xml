@@ -37,7 +37,7 @@
         <mysql.version>8.0.20</mysql.version>
         <netty.version>4.1.50.Final</netty.version>
         <spring.boot.mybatis.version>2.1.2</spring.boot.mybatis.version>
-        <lombok.version>1.18.12</lombok.version>
+        <lombok.version>1.18.30</lombok.version>
         <jboss.marshalling.version>2.0.9.Final</jboss.marshalling.version>
         <hikari.version>3.4.5</hikari.version>
         <mybatis.plus.version>3.3.1</mybatis.plus.version>
