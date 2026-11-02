@@ -54,7 +54,7 @@
         <micro.common.version>1.0-SNAPSHOT</micro.common.version>
         <micro.thrift.user.version>1.0-SNAPSHOT</micro.thrift.user.version>
         <protobuf.version>4.29.0</protobuf.version>
-        <guava.version>33.4.0-jre</guava.version>
+        <guava.version>33.7.1-jre</guava.version>
         <kryo.version>4.0.2</kryo.version>
         <mail.version>1.4.7</mail.version>
     </properties>
